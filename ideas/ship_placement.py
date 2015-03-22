@@ -82,6 +82,13 @@ def border_violation_correction(ship):
             move_ship(ship, 'w')
 
 
+def ship_blocked(ship, the_map):
+    for row, col in ship['coords']:
+        if the_map[row][col] == 'X':
+            return True
+    return False
+
+
 def place_ship(ship, the_map):
     for row, col in ship['coords']:
         the_map[row][col] = 'X'
@@ -113,8 +120,11 @@ def run():
             elif key == 'r':
                 rotate_ship(ship)
             elif key == ' ':
-                place_ship(ship, the_map)
-                break
+                if ship_blocked(ship, the_map):
+                    print('Ship blocked!')
+                else:
+                    place_ship(ship, the_map)
+                    break
 
 
 if __name__ == '__main__':
