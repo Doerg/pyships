@@ -5,17 +5,30 @@
 #
 # controls:
 # move ship with w/a/s/d
-# rotate ship with space
-# place ship with r
+# rotate ship with r
+# place ship with space
 # exit program with q
 
 from copy import deepcopy
+
+# usable keys
+LEFT = 'a'
+RIGHT = 'd'
+UP = 'w'
+DOWN = 's'
+ROTATE = 'r'
+PLACE_SHIP = ' '
+QUIT = 'q'
+
+# map tokens
+SHIP = 'X'
+WATER = '.'
 
 
 def show_map(ship, the_map):
     temporary_map = deepcopy(the_map)
     for row, col in ship['coords']:
-        temporary_map[row][col] = 'X'
+        temporary_map[row][col] = SHIP
     for row in temporary_map:
         print(' '.join(row))
 
@@ -23,19 +36,19 @@ def show_map(ship, the_map):
 def move_ship(ship, direction):
     coords = ship['coords']
 
-    if direction == 'w':
+    if direction == UP:
         if not coords[0][0] == 0:
             for coord in coords:
                 coord[0] -= 1
-    elif direction == 'a':
+    elif direction == LEFT:
         if not coords[0][1] == 0:
             for coord in coords:
                 coord[1] -= 1
-    elif direction == 's':
+    elif direction == DOWN:
         if not coords[-1][0] == 9:
             for coord in coords:
                 coord[0] += 1
-    elif direction == 'd':
+    elif direction == RIGHT:
         if not coords[-1][1] == 9:
             for coord in coords:
                 coord[1] += 1
@@ -70,37 +83,37 @@ def rotate_to_horizontal(coords, rotation_axis):
 def border_violation_correction(ship):
     coords = ship['coords']
 
-    if ship['alignment'] == 'hor':  #check for violations @ left & right
+    if ship['alignment'] == 'hor':  #correction of violations @ left & right
         while coords[0][1] < 0:
-            move_ship(ship, 'd')
+            move_ship(ship, RIGHT)
         while coords[-1][1] > 9:
-            move_ship(ship, 'a')
-    else:                           #check for violations @ top & bottom
+            move_ship(ship, LEFT)
+    else:                           #correction of violations @ top & bottom
         while coords[0][0] < 0:
-            move_ship(ship, 's')
+            move_ship(ship, DOWN)
         while coords[-1][0] > 9:
-            move_ship(ship, 'w')
+            move_ship(ship, UP)
 
 
 def ship_blocked(ship, the_map):
     for row, col in ship['coords']:
-        if the_map[row][col] == 'X':
+        if the_map[row][col] == SHIP:
             return True
     return False
 
 
 def place_ship(ship, the_map):
     for row, col in ship['coords']:
-        the_map[row][col] = 'X'
+        the_map[row][col] = SHIP
 
 
 def run():
     map_size = 10
     center = map_size // 2
-    the_map = [['.' for field in range(map_size)] for row in range(map_size)]
+    the_map = [[WATER for field in range(map_size)] for row in range(map_size)]
 
     for ship_size in (4, 4, 3, 3, 2, 2):
-        ship = {
+        ship = {    # ship placement selection starts @ map center & horizontal
             'alignment': 'hor',
             'coords': [
                 [center, center - ship_size//2 + i]
@@ -113,13 +126,13 @@ def run():
 
             key = input('--> ')
 
-            if key == 'q':
+            if key == QUIT:
                 return
-            if key in "wasd":
+            if key in (LEFT, RIGHT, UP, DOWN):
                 move_ship(ship, key)
-            elif key == 'r':
+            elif key == ROTATE:
                 rotate_ship(ship)
-            elif key == ' ':
+            elif key == PLACE_SHIP:
                 if ship_blocked(ship, the_map):
                     print('Ship blocked!')
                 else:
