@@ -23,20 +23,20 @@ def run(stdscr):
 
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLUE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_GREEN)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_BLUE)
     stdscr.bkgd('~', curses.color_pair(1))
     logo_win.bkgd(' ', curses.color_pair(3))
     upper_win.bkgd(' ', curses.color_pair(2))
     lower_win.bkgd(' ', curses.color_pair(2))
 
-    stdscr.addstr(curses.LINES//2, 5, '▲', curses.color_pair(4))
-    stdscr.addstr(curses.LINES//2 + 1, 5, '▣', curses.color_pair(4))
-    stdscr.addstr(curses.LINES//2 + 2, 5, '▣', curses.color_pair(4))
-    stdscr.addstr(curses.LINES//2 + 3, 5, '▼', curses.color_pair(4))
+    stdscr.addstr(curses.LINES//2, 8, '▲', curses.color_pair(4))
+    stdscr.addstr(curses.LINES//2 + 1, 8, '▣', curses.color_pair(4))
+    stdscr.addstr(curses.LINES//2 + 2, 8, '▣', curses.color_pair(4))
+    stdscr.addstr(curses.LINES//2 + 3, 8, '▼', curses.color_pair(4))
 
     stdscr.addstr(
-        curses.LINES//2, curses.COLS-10, '◀-▣-▣-▶',
+        curses.LINES//2, curses.COLS-15, '◀-▣-▣-▶',
         curses.color_pair(4)
     )
 
@@ -46,8 +46,8 @@ def run(stdscr):
                 logo_win.addstr(y+1, x+1, cell)
             except curses.error:
                 pass
-    upper_win.addstr(1, 5, "Your name: ", curses.A_BOLD)
-    lower_win.addstr(1, 5, "Host IP:   ", curses.A_BOLD)
+    upper_win.addstr(1, 3, "Your name: ", curses.A_BOLD)
+    lower_win.addstr(1, 3, "Host IP:   ", curses.A_BOLD)
 
     stdscr.refresh()
     logo_win.refresh()
@@ -55,8 +55,8 @@ def run(stdscr):
     lower_win.refresh()
 
     curses.echo()
-    upper_win.getstr(1, 17)
-    lower_win.getstr(1, 17)
+    upper_win.getstr(1, 14, 15)
+    lower_win.getstr(1, 14, 15)
     curses.noecho()
 
     curses.curs_set(False)
