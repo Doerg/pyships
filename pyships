@@ -6,15 +6,15 @@ from argparse import ArgumentParser
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description='pyships: play Battleships via LAN.')
+    parser = ArgumentParser(description='pyships: play Battleships via LAN')
     parser.add_argument(
         '-s', '--server', action='store_true',
-        help='start a pyships server instead of a client'
+        help='start a pyships server'
     )
     args = parser.parse_args()
 
     if args.server:
-        #from Server import Launcher
+        #from Server import Server or something
         print("Server not implemented yet!")
     else:
         from client import Game
