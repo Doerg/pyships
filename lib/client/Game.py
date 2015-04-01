@@ -28,10 +28,10 @@ def establish_connection():
     :return: connection object of some sort
     """
     while True:
-        player_name, host_ip = TitleScreen.logon_prompt()
+        player_name, host_ip = TitleScreen.ask_logon_data()
         connection = False #some_method(player_name, host_ip)
         if not connection:
-            if TitleScreen.exit_prompt():
+            if TitleScreen.ask_exit():
                 exit()
         else:
             return connection
