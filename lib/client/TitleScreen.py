@@ -24,7 +24,6 @@ def ask_logon_data():
     :return: user name and host ip as strings
     """
     _exit_prompt.hide()
-
     _background.refresh()   #to undisplay now hidden exit prompt
 
     _name_prompt.show()
@@ -40,7 +39,6 @@ def ask_exit():
     """
     _name_prompt.hide()
     _ip_prompt.hide()
-
     _background.refresh()     #to undisplay now hidden name/ip prompts
 
     _exit_prompt.show()

@@ -58,7 +58,7 @@ class Background(Panel):
                 try:
                     self._win.addstr(
                         row, col, '~∽'[(row+col) % 2],
-                        curses.color_pair(Colors.OCEAN)
+                        Colors.OCEAN
                     )
                 except curses.error:
                     pass
@@ -70,30 +70,30 @@ class Background(Panel):
         """
         vert_center = curses.LINES//2
 
-        self._win.addstr(vert_center - 15, 17, '▲', curses.color_pair(Colors.SHIP))
-        self._win.addstr(vert_center - 14, 17, '▣', curses.color_pair(Colors.SHIP))
-        self._win.addstr(vert_center - 13, 17, '▼', curses.color_pair(Colors.SHIP))
+        self._win.addstr(vert_center - 15, 17, '▲', Colors.SHIP)
+        self._win.addstr(vert_center - 14, 17, '▣', Colors.SHIP)
+        self._win.addstr(vert_center - 13, 17, '▼', Colors.SHIP)
 
-        self._win.addstr(vert_center,     8, '▲', curses.color_pair(Colors.SHIP))
-        self._win.addstr(vert_center + 1, 8, '▣', curses.color_pair(Colors.SHIP))
-        self._win.addstr(vert_center + 2, 8, '▣', curses.color_pair(Colors.SHIP))
-        self._win.addstr(vert_center + 3, 8, '▼', curses.color_pair(Colors.SHIP))
+        self._win.addstr(vert_center,     8, '▲', Colors.SHIP)
+        self._win.addstr(vert_center + 1, 8, '▣', Colors.SHIP)
+        self._win.addstr(vert_center + 2, 8, '▣', Colors.SHIP)
+        self._win.addstr(vert_center + 3, 8, '▼', Colors.SHIP)
 
-        self._win.addstr(vert_center + 12, 14, '▲', curses.color_pair(Colors.SHIP))
-        self._win.addstr(vert_center + 13, 14, '▣', curses.color_pair(Colors.SHIP))
-        self._win.addstr(vert_center + 14, 14, '▼', curses.color_pair(Colors.SHIP))
+        self._win.addstr(vert_center + 12, 14, '▲', Colors.SHIP)
+        self._win.addstr(vert_center + 13, 14, '▣', Colors.SHIP)
+        self._win.addstr(vert_center + 14, 14, '▼', Colors.SHIP)
 
         self._win.addstr(
             vert_center - 5, curses.COLS-15, '◀ ▶',
-            curses.color_pair(Colors.SHIP)
+            Colors.SHIP
         )
         self._win.addstr(
             vert_center, curses.COLS-18, '◀ ▣ ▣ ▶',
-            curses.color_pair(Colors.SHIP)
+            Colors.SHIP
         )
         self._win.addstr(
             vert_center + 6, curses.COLS-13, '◀ ▶',
-            curses.color_pair(Colors.SHIP)
+            Colors.SHIP
         )
 
 
@@ -113,7 +113,7 @@ class Background(Panel):
             4, curses.COLS//2 - logo_width//2
         )
 
-        self._logo_box.bkgd(' ', curses.color_pair(Colors.LOGO_BOX))
+        self._logo_box.bkgd(' ', Colors.LOGO_BOX)
         self._logo_box.box()
 
         for y, row in enumerate(logo):
@@ -148,7 +148,7 @@ class LogonPrompt(Panel):
         )
 
         self._win.box()
-        self._win.bkgd(' ', curses.color_pair(Colors.PROMPT_BOX))
+        self._win.bkgd(' ', Colors.PROMPT_BOX)
         self._win.addstr(vert_padding, hor_padding, text, curses.A_BOLD)
 
 
@@ -208,7 +208,7 @@ class ExitPrompt(Panel):
         )
 
         self._win.box()
-        self._win.bkgd(' ', curses.color_pair(Colors.PROMPT_BOX))
+        self._win.bkgd(' ', Colors.PROMPT_BOX)
         self._win.addstr(vert_padding, hor_padding, text, curses.A_BOLD)
 
 
