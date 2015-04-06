@@ -116,11 +116,12 @@ class Background(Panel):
         self._logo_box.bkgd(' ', Colors.LOGO_BOX)
         self._logo_box.box()
 
+        self._logo_box.bkgdset(' ', curses.A_BOLD)
         for y, row in enumerate(logo):
             for x, cell in enumerate(row.rstrip()):
                 try:
                     self._logo_box.addstr(
-                        y + vert_padding, x + hor_padding, cell
+                        y + vert_padding, x + hor_padding, cell, Colors.LOGO_BOX
                     )
                 except curses.error:
                     pass
