@@ -43,3 +43,10 @@ def ask_exit():
     _exit_prompt.show()
 
     return _exit_prompt.get_answer()
+
+
+def uninit():
+    """
+    free all title screen resources.
+    """
+    _background = _name_prompt = _ip_prompt = _exit_prompt = None
