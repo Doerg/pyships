@@ -1,5 +1,4 @@
-from client import TitleWindows
-from client import ColorDefinitions
+from client import TitleWindows, ColorDefinitions
 
 
 def init():

@@ -57,8 +57,7 @@ class Background(Panel):
             for col in range(curses.COLS):
                 try:
                     self._win.addstr(
-                        row, col, '~∽'[(row+col) % 2],
-                        Colors.OCEAN
+                        row, col, '~∽'[(row+col) % 2], Colors.OCEAN
                     )
                 except curses.error:
                     pass
@@ -83,18 +82,9 @@ class Background(Panel):
         self._win.addstr(vert_center + 13, 14, '▣', Colors.SHIP)
         self._win.addstr(vert_center + 14, 14, '▼', Colors.SHIP)
 
-        self._win.addstr(
-            vert_center - 5, curses.COLS-15, '◀ ▶',
-            Colors.SHIP
-        )
-        self._win.addstr(
-            vert_center, curses.COLS-18, '◀ ▣ ▣ ▶',
-            Colors.SHIP
-        )
-        self._win.addstr(
-            vert_center + 6, curses.COLS-13, '◀ ▶',
-            Colors.SHIP
-        )
+        self._win.addstr(vert_center - 5, curses.COLS-15, '◀ ▶', Colors.SHIP)
+        self._win.addstr(vert_center, curses.COLS-18, '◀ ▣ ▣ ▶', Colors.SHIP)
+        self._win.addstr(vert_center + 6, curses.COLS-13, '◀ ▶', Colors.SHIP)
 
 
     def _place_logo(self):
@@ -107,10 +97,13 @@ class Background(Panel):
         logo_width = len(max(logo, key=lambda line: len(line)))
         hor_padding = 1
         vert_padding = 3
+        rel_vert_location = 0.1
 
         self._logo_box = curses.newwin(
-            logo_height + vert_padding*2, logo_width + hor_padding*2,
-            4, curses.COLS//2 - logo_width//2
+            logo_height + vert_padding*2,
+            logo_width + hor_padding*2,
+            int(curses.LINES * rel_vert_location),
+            curses.COLS//2 - logo_width//2
         )
 
         self._logo_box.bkgd(' ', Colors.LOGO_BOX)
@@ -148,8 +141,8 @@ class LogonPrompt(Panel):
             curses.COLS//2 - win_width//2
         )
 
-        self._win.box()
         self._win.bkgd(' ', Colors.PROMPT_BOX)
+        self._win.box()
         self._win.addstr(vert_padding, hor_padding, text, curses.A_BOLD)
 
 
@@ -168,7 +161,8 @@ class LogonPrompt(Panel):
         """
         curses.echo()
         curses.curs_set(True)
-        self._win.getstr(1, self._input_offset, self._input_limit).rstrip()
+        user_input = self._win.getstr(1, self._input_offset, self._input_limit)
+        return user_input.rstrip()
 
 
 

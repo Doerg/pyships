@@ -1,6 +1,5 @@
 import curses
-from client import TitleScreen
-from client import BattleScreen
+from client import TitleScreen, BattleScreen
 from sys import exit
 
 

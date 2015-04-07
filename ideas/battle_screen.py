@@ -17,7 +17,6 @@ def run(stdscr):
     curses.init_pair(12, curses.COLOR_GREEN, curses.COLOR_BLACK)
 
     background_win = curses.newwin(29, 83, 0, 0)
-    background_win.bkgd(' ', curses.color_pair(12))
     background_win.bkgdset(' ', curses.A_BOLD)
     background_win.box()
     background_win.addstr(4, 18, 'Player', curses.color_pair(12))
