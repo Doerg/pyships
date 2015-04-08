@@ -17,7 +17,10 @@ def run_client(stdscr):
     :param stdscr: curses default window, passed by wrapper method
     """
     TitleScreen.init()
-    connection = establish_connection()
+    connection, player_name = establish_connection()
+    TitleScreen.uninit()
+
+    BattleScreen.init(player_name)
 
 
 def establish_connection():
@@ -28,9 +31,9 @@ def establish_connection():
     """
     while True:
         player_name, host_ip = TitleScreen.ask_logon_data()
-        connection = False #some_method(player_name, host_ip)
+        connection = True #some_method(player_name, host_ip)
         if not connection:
             if TitleScreen.ask_exit():
                 exit()
         else:
-            return connection
+            return connection, player_name

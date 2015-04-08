@@ -32,6 +32,9 @@ exit_width = len(exit_text) + 2*exit_hpad
 exit_vert_loc = 0.75
 
 
+
+### classes ###
+
 class Panel(object):
     """
     title screen consists of showable / hidable panels. this means that all
@@ -78,16 +81,20 @@ class Background(Panel):
         self._logo_box.refresh()    #needs extra refresh to not be hidden
 
 
+    def clear(self):
+        self._win.bkgd(Colors.CLEAR)
+        self._win.clear()
+
+
     def _place_water(self):
         """
         puts water tokens on the background window.
         """
+        self._win.bkgdset(' ', Colors.OCEAN)
         for row in range(curses.LINES):
             for col in range(curses.COLS):
                 try:
-                    self._win.addstr(
-                        row, col, '~∽'[(row+col) % 2], Colors.OCEAN
-                    )
+                    self._win.addstr(row, col, '~∽'[(row+col) % 2])
                 except curses.error:
                     pass
 
@@ -98,22 +105,23 @@ class Background(Panel):
         """
         vert_center = curses.LINES//2
 
-        self._win.addstr(vert_center - 15, 17, '▲', Colors.SHIP)
-        self._win.addstr(vert_center - 14, 17, '▣', Colors.SHIP)
-        self._win.addstr(vert_center - 13, 17, '▼', Colors.SHIP)
+        self._win.bkgdset(' ', Colors.SHIP)
+        self._win.addstr(vert_center - 15, 17, '▲')
+        self._win.addstr(vert_center - 14, 17, '▣')
+        self._win.addstr(vert_center - 13, 17, '▼')
 
-        self._win.addstr(vert_center,     8, '▲', Colors.SHIP)
-        self._win.addstr(vert_center + 1, 8, '▣', Colors.SHIP)
-        self._win.addstr(vert_center + 2, 8, '▣', Colors.SHIP)
-        self._win.addstr(vert_center + 3, 8, '▼', Colors.SHIP)
+        self._win.addstr(vert_center,     8, '▲')
+        self._win.addstr(vert_center + 1, 8, '▣')
+        self._win.addstr(vert_center + 2, 8, '▣')
+        self._win.addstr(vert_center + 3, 8, '▼')
 
-        self._win.addstr(vert_center + 12, 14, '▲', Colors.SHIP)
-        self._win.addstr(vert_center + 13, 14, '▣', Colors.SHIP)
-        self._win.addstr(vert_center + 14, 14, '▼', Colors.SHIP)
+        self._win.addstr(vert_center + 12, 14, '▲')
+        self._win.addstr(vert_center + 13, 14, '▣')
+        self._win.addstr(vert_center + 14, 14, '▼')
 
-        self._win.addstr(vert_center - 5, curses.COLS-15, '◀ ▶', Colors.SHIP)
-        self._win.addstr(vert_center, curses.COLS-18, '◀ ▣ ▣ ▶', Colors.SHIP)
-        self._win.addstr(vert_center + 6, curses.COLS-13, '◀ ▶', Colors.SHIP)
+        self._win.addstr(vert_center - 5, curses.COLS-15, '◀ ▶')
+        self._win.addstr(vert_center, curses.COLS-18, '◀ ▣ ▣ ▶')
+        self._win.addstr(vert_center + 6, curses.COLS-13, '◀ ▶')
 
 
     def _place_logo(self):
@@ -135,13 +143,11 @@ class Background(Panel):
         self._logo_box.bkgd(' ', Colors.LOGO_BOX)
         self._logo_box.box()
 
-        self._logo_box.bkgdset(' ', curses.A_BOLD)
+        self._logo_box.bkgdset(' ', curses.A_BOLD | Colors.LOGO_BOX)
         for y, row in enumerate(logo):
             for x, cell in enumerate(row.rstrip()):
                 try:
-                    self._logo_box.addstr(
-                        y + logo_vpad, x + logo_hpad, cell, Colors.LOGO_BOX
-                    )
+                    self._logo_box.addstr(y + logo_vpad, x + logo_hpad, cell)
                 except curses.error:
                     pass
 
