@@ -15,3 +15,5 @@ def init(player_name):
     _player_win.refresh()
     _enemy_win.refresh()
     _message_win.refresh()
+
+    _message_win._win.getch() #remove me

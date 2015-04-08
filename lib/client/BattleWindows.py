@@ -9,7 +9,7 @@ margin = 1
 
 # battlefield pair
 battle_height = 30
-battle_width = 2*battle_height - 1
+battle_width = 2*battle_height - 1  #almost twice as big to keep symmetry
 battle_box_height = battle_height + 2
 battle_box_width = battle_width + 2
 
@@ -58,7 +58,6 @@ class Window(object):
         redraw the window.
         """
         self._win.refresh()
-        self._win.getch()
 
 
 
@@ -166,6 +165,11 @@ class BattleGround(Window):
         )
 
         self._win.bkgd(' ', Colors.BATTLE_FRAME)
+        self._win.bkgdset(' ', Colors.OCEAN)
+
+        for row in range(1, battle_height+1):
+            for col in range(1, battle_width+1):
+                self._win.addstr(row, col, '~∽'[(row+col) % 2])
 
 
 
