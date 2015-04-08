@@ -63,7 +63,15 @@ class Window(object):
 
 
 class ContentFrame(Window):
+    """
+    the outermost frame of the battle screen. this frame is centralized and
+    contains all sub-windows.
+    """
     def __init__(self, player_name):
+        """
+        draws the frame and writes player names.
+        :param player_name: the name of the player
+        """
         super().__init__(frame_height, frame_width, 0, 0)
 
         self._win.bkgd(' ', Colors.CONTENT_FRAME | curses.A_BOLD)
@@ -87,48 +95,66 @@ class ContentFrame(Window):
 
 
 class KeyLegend(Window):
+    """
+    info bar which contains the currently usable keys, plus their descriptions.
+    """
     def __init__(self):
         super().__init__(legend_height, legend_width, 1, 1 + margin)
 
-        self._win.bkgd(' ', Colors.LEGEND)
         self._text_line = legend_height//2
+
+        self._win.bkgd(' ', Colors.LEGEND)
+        self._win.bkgdset(' ', curses.A_BOLD)
 
         self.set_ship_placement_keys()
 
 
     def set_ship_placement_keys(self):
+        """
+        set key descriptions for initial ship placement.
+        """
         self._set_keys(ship_placement_keys)
 
 
     def set_battle_keys(self):
+        """
+        set key descriptions for battle mode.
+        """
         self._set_keys(battle_keys)
 
 
     def _set_keys(self, keys):
-        self._clear()
+        self._clear_legend()
         self._win.move(self._text_line, 1)
+
         for key, description in keys:
             self._add_key(key, description)
 
 
-    def _clear(self):
+    def _clear_legend(self):
         self._win.addstr(
-            self._text_line, info_padding, ' ' * (legend_width-info_padding-1)
+            self._text_line, info_padding, ' ' * (legend_width-info_padding-1),
+            Colors.LEGEND
         )
 
 
     def _add_key(self, key, description):
-        self._win.addstr(
-            ' ' * info_padding + key + ': ', curses.A_BOLD | Colors.LEGEND
-        )
-        self._win.addstr(
-            '   %s   ' % description, curses.A_BOLD | Colors.LEGEND_ENTRY
-        )
+        self._win.addstr(' ' * info_padding + key + ': ', Colors.LEGEND)
+        self._win.addstr('   %s   ' % description, Colors.LEGEND_ENTRY)
 
 
 
 class BattleGround(Window):
+    """
+    square window which displays the battleground of the player or opponent.
+    the battle screen contains two of these.
+    """
     def __init__(self, opponent=False):
+        """
+        draws one of the two battlegrounds of the screen.
+        :param opponent: draws the battleground on the right side, if set to
+        true. default is left side (false).
+        """
         if opponent:
             offset_x = battle_box_width + 3*margin + 2
         else:
@@ -144,6 +170,10 @@ class BattleGround(Window):
 
 
 class MessageBar(Window):
+    """
+    info bar used for displaying ingame messages to the player. these messages
+    include instructions, enemy moves, current state of the game, etc.
+    """
     def __init__(self):
         super().__init__(
             message_height, message_width,
@@ -151,4 +181,29 @@ class MessageBar(Window):
             1 + margin
         )
 
+        self._text_line = legend_height//2
+
         self._win.bkgd(' ', Colors.MESSAGE)
+        self._win.bkgdset(' ', curses.A_BOLD | Colors.MESSAGE)
+
+        self.put_message(
+            'Welcome to pyships! Please make your ship placements.'
+        )
+
+
+    def put_message(self, message):
+        """
+        writes the given message into the message bar.
+        :param message: the message to write
+        """
+        self._clear_bar()
+        self._win.addnstr(
+            self._text_line, info_padding, message,
+            message_width - 2*info_padding
+        )
+
+
+    def _clear_bar(self):
+        self._win.addstr(
+            self._text_line, info_padding, ' ' * (message_width-info_padding-1)
+        )
