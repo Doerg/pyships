@@ -2,37 +2,27 @@ import curses
 from client import ColorDefinitions as Colors
 
 
-### window layout data ###
+### UI data ###
 
 # margin between windows
 margin = 1
 
 # battlefield pair
-battle_height = 30
-battle_width = 2*battle_height - 1  #almost twice as big to keep symmetry
-battle_box_height = battle_height + 2
-battle_box_width = battle_width + 2
+logical_map_size = 24
+map_height = logical_map_size
+map_width = 2*map_height - 1  #almost twice as big to keep symmetry
+map_box_height = map_height + 2
+map_box_width = map_width + 2
 
 # top/bottom info bars
-ship_placement_keys = (
-    ('←↑↓→', 'Move cursor'),
-    ('Space', 'Rotate ship'),
-    ('Return', 'Place ship'),
-    ('Q', 'Exit')
-)
-battle_keys = (
-    ('←↑↓→', 'Move cursor'),
-    ('Return', 'Fire shot'),
-    ('Q', 'Exit')
-)
-legend_width = message_width = 2*battle_box_width + 2*margin + 1
+legend_width = message_width = 2*map_box_width + 2*margin + 1
 legend_height = 3
 message_height = 3
-info_padding = 5
+info_padding = 4
 
 # main content frame
 frame_width = legend_width + 2*margin + 2
-frame_height = legend_height + battle_box_height + message_height + 2*margin + 2
+frame_height = legend_height + map_box_height + message_height + 2*margin + 2
 
 
 
@@ -50,14 +40,18 @@ class Window(object):
         frame_y = curses.LINES//2 - frame_height//2
         frame_x = curses.COLS//2 - frame_width//2
         self._win = curses.newwin(height, width, frame_y + y, frame_x + x)
-        self._win.box() #all windows are boxed on this screen
+        self._win.box() #all windows on this screen are boxed
 
 
-    def refresh(self):
+    def update(self):
         """
         redraw the window.
         """
         self._win.refresh()
+
+
+    def get_key(self):
+        return self._win.getch()
 
 
 
@@ -73,21 +67,24 @@ class ContentFrame(Window):
         """
         super().__init__(frame_height, frame_width, 0, 0)
 
+        curses.noecho()
+        curses.curs_set(False)
+
         self._win.bkgd(' ', Colors.CONTENT_FRAME | curses.A_BOLD)
         self._win.vline(
             legend_height + 1, frame_width//2,
-            curses.ACS_VLINE, battle_box_height + 2*margin
+            curses.ACS_VLINE, map_box_height + 2*margin
         )
 
         self._win.addstr(
             legend_height + margin,
-            margin + battle_box_width//2 - len(player_name)//2,
+            margin + map_box_width//2 - len(player_name)//2,
             player_name, Colors.PLAYER_NAME
         )
         self._win.addstr(
             legend_height + margin,
-            1 + 3*margin + battle_box_width +
-            battle_box_width//2 - len('Opponent')//2,
+            1 + 3*margin + map_box_width +
+            map_box_width//2 - len('Opponent')//2,
             'Opponent', Colors.OPPONENT_NAME
         )
 
@@ -97,6 +94,18 @@ class KeyLegend(Window):
     """
     info bar which contains the currently usable keys, plus their descriptions.
     """
+    ship_placement_keys = (
+        ('←↑↓→', 'Move cursor'),
+        ('Space', 'Rotate ship'),
+        ('Return', 'Place ship'),
+        ('Q', 'Quit')
+    )
+    battle_keys = (
+        ('←↑↓→', 'Move cursor'),
+        ('Return', 'Fire shot'),
+        ('Q', 'Quit')
+    )
+
     def __init__(self):
         super().__init__(legend_height, legend_width, 1, 1 + margin)
 
@@ -112,14 +121,14 @@ class KeyLegend(Window):
         """
         set key descriptions for initial ship placement.
         """
-        self._set_keys(ship_placement_keys)
+        self._set_keys(self.ship_placement_keys)
 
 
     def set_battle_keys(self):
         """
         set key descriptions for battle mode.
         """
-        self._set_keys(battle_keys)
+        self._set_keys(self.battle_keys)
 
 
     def _set_keys(self, keys):
@@ -139,7 +148,7 @@ class KeyLegend(Window):
 
     def _add_key(self, key, description):
         self._win.addstr(' ' * info_padding + key + ': ', Colors.LEGEND)
-        self._win.addstr('   %s   ' % description, Colors.LEGEND_ENTRY)
+        self._win.addstr('  %s  ' % description, Colors.LEGEND_ENTRY)
 
 
 
@@ -148,6 +157,12 @@ class BattleGround(Window):
     square window which displays the battleground of the player or opponent.
     the battle screen contains two of these.
     """
+    ship_front_hor = '◀'
+    ship_back_hor = '▶'
+    ship_front_vert = '▲'
+    ship_back_vert = '▼'
+    ship_center = '▣'
+
     def __init__(self, opponent=False):
         """
         draws one of the two battlegrounds of the screen.
@@ -155,21 +170,70 @@ class BattleGround(Window):
         true. default is left side (false).
         """
         if opponent:
-            offset_x = battle_box_width + 3*margin + 2
+            offset_x = map_box_width + 3*margin + 2
         else:
             offset_x = margin + 1
 
         super().__init__(
-            battle_box_height, battle_box_width,
-            legend_height + margin + 1, offset_x
+            map_box_height, map_box_width, legend_height + margin + 1, offset_x
         )
+
+        self._ships = []
 
         self._win.bkgd(' ', Colors.BATTLE_FRAME)
         self._win.bkgdset(' ', Colors.OCEAN)
+        self.draw_map()
 
-        for row in range(1, battle_height+1):
-            for col in range(1, battle_width+1):
+
+    def add_ship(self, ship):
+        """
+        add a ship to this battleground.
+        :param ship: the ship to be added
+        """
+        self._ships.append(ship)
+
+
+    def draw_map(self, tmp_ship=None):
+        """
+        draws the battleground with all ships on it.
+        :param tmp_ship: an extra ship to display for this one drawing
+        """
+        for row in range(1, map_height+1):
+            for col in range(1, map_width+1):
                 self._win.addstr(row, col, '~∽'[(row+col) % 2])
+        for ship in self._ships:
+            self._draw_ship(ship)
+        if tmp_ship:
+            self._draw_ship(tmp_ship)
+
+
+    def _draw_ship(self, ship):
+        if ship['alignment'] == 'hor':
+            ship_tokens = [self.ship_front_hor, self.ship_back_hor]
+            for _ in range(len(ship['coords']) - 2):
+                ship_tokens.insert(1, self.ship_center)
+            front_y, front_x = ship['coords'][0]
+            self._win.addstr(
+                front_y+1, self._scale(front_x),
+                ' '.join(ship_tokens), Colors.SHIP
+            )
+        else:
+            y, x = ship['coords'][0]
+            self._win.addstr(
+                y+1, self._scale(x), self.ship_front_vert, Colors.SHIP
+            )
+            y, x = ship['coords'][-1]
+            self._win.addstr(
+                y+1, self._scale(x), self.ship_back_vert, Colors.SHIP
+            )
+            for y, x in ship['coords'][1:-1]:
+                self._win.addstr(
+                    y+1, self._scale(x), self.ship_center, Colors.SHIP
+                )
+
+
+    def _scale(self, x):
+        return x*2 + 1
 
 
 
@@ -181,7 +245,7 @@ class MessageBar(Window):
     def __init__(self):
         super().__init__(
             message_height, message_width,
-            legend_height + battle_box_height + 2*margin + 1,
+            legend_height + map_box_height + 2*margin + 1,
             1 + margin
         )
 
@@ -189,10 +253,6 @@ class MessageBar(Window):
 
         self._win.bkgd(' ', Colors.MESSAGE)
         self._win.bkgdset(' ', curses.A_BOLD | Colors.MESSAGE)
-
-        self.put_message(
-            'Welcome to pyships! Please make your ship placements.'
-        )
 
 
     def put_message(self, message):

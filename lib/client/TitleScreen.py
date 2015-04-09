@@ -14,7 +14,7 @@ def init():
     _ip_prompt = TitleWindows.IpPrompt()
     _exit_prompt = TitleWindows.ExitPrompt()
 
-    _background.refresh()
+    _background.update()
 
 
 def ask_logon_data():
@@ -23,7 +23,7 @@ def ask_logon_data():
     :return: user name and host ip as strings
     """
     _exit_prompt.hide()
-    _background.refresh()   #to undisplay now hidden exit prompt
+    _background.update()   #to undisplay now hidden exit prompt
 
     _name_prompt.show()
     _ip_prompt.show()
@@ -38,7 +38,7 @@ def ask_exit():
     """
     _name_prompt.hide()
     _ip_prompt.hide()
-    _background.refresh()     #to undisplay now hidden name/ip prompts
+    _background.update()     #to undisplay now hidden name/ip prompts
 
     _exit_prompt.show()
 
@@ -51,5 +51,5 @@ def uninit():
     """
     global _background, _name_prompt, _ip_prompt, _exit_prompt
     _background.clear()
-    _background.refresh()
+    _background.update()
     _background = _name_prompt = _ip_prompt = _exit_prompt = None

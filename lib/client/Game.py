@@ -1,6 +1,6 @@
 import curses
 from client import TitleScreen, BattleScreen
-from sys import exit
+from CustomExceptions import ProgramExit
 
 
 def run():
@@ -16,11 +16,18 @@ def run_client(stdscr):
     client game logic.
     :param stdscr: curses default window, passed by wrapper method
     """
-    TitleScreen.init()
-    connection, player_name = establish_connection()
-    TitleScreen.uninit()
+    try:
+        TitleScreen.init()
+        connection, player_name = establish_connection()
+        TitleScreen.uninit()
 
-    BattleScreen.init(player_name)
+        BattleScreen.init(player_name)
+        ship_placements = BattleScreen.player_ship_placements()
+        BattleScreen._key_legend.set_battle_keys()  #remove me
+        BattleScreen._key_legend.update()           #remove me
+        BattleScreen._message_bar._win.getch()      #remove me
+    except ProgramExit:
+        return
 
 
 def establish_connection():
@@ -34,6 +41,6 @@ def establish_connection():
         connection = True #some_method(player_name, host_ip)
         if not connection:
             if TitleScreen.ask_exit():
-                exit()
+                raise ProgramExit
         else:
             return connection, player_name

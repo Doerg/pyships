@@ -3,7 +3,7 @@ import curses.panel
 from client import ColorDefinitions as Colors
 
 
-### window layout data ###
+### UI data ###
 
 # logo
 logo_hpad = 1
@@ -73,7 +73,7 @@ class Background(Panel):
         self._place_logo()
 
 
-    def refresh(self):
+    def update(self):
         """
         redraws the whole screen.
         """
@@ -82,6 +82,9 @@ class Background(Panel):
 
 
     def clear(self):
+        """
+        removes all content from the background.
+        """
         self._win.bkgd(Colors.CLEAR)
         self._win.clear()
 
