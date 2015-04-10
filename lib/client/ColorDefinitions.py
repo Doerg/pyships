@@ -19,9 +19,11 @@ def init_colors():
     curses.init_pair(10, curses.COLOR_WHITE, curses.COLOR_CYAN)
     curses.init_pair(11, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(12, curses.COLOR_WHITE, curses.COLOR_CYAN)
+    curses.init_pair(13, curses.COLOR_GREEN, curses.COLOR_BLUE)
 
     global CLEAR, OCEAN, SHIP, LOGO_BOX, PROMPT_BOX, CONTENT_FRAME, PLAYER_NAME
     global OPPONENT_NAME, LEGEND, LEGEND_ENTRY, MESSAGE, BATTLE_FRAME
+    global NEW_SHIP
 
     CLEAR = curses.color_pair(1)
     OCEAN = curses.color_pair(2)
@@ -35,3 +37,4 @@ def init_colors():
     LEGEND_ENTRY = curses.color_pair(10)
     MESSAGE = curses.color_pair(11)
     BATTLE_FRAME = curses.color_pair(12)
+    NEW_SHIP = curses.color_pair(13)

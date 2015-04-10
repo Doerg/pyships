@@ -25,6 +25,7 @@ def run_client(stdscr):
         ship_placements = BattleScreen.player_ship_placements()
         BattleScreen._key_legend.set_battle_keys()  #remove me
         BattleScreen._key_legend.update()           #remove me
+        BattleScreen._message_bar.put_message("That's it so far!!!") #remove me
         BattleScreen._message_bar._win.getch()      #remove me
     except ProgramExit:
         return

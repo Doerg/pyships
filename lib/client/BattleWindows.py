@@ -193,7 +193,7 @@ class BattleGround(Window):
         self._ships.append(ship)
 
 
-    def draw_map(self, tmp_ship=None):
+    def draw_map(self, new_ship=None):
         """
         draws the battleground with all ships on it.
         :param tmp_ship: an extra ship to display for this one drawing
@@ -203,33 +203,23 @@ class BattleGround(Window):
                 self._win.addstr(row, col, '~∽'[(row+col) % 2])
         for ship in self._ships:
             self._draw_ship(ship)
-        if tmp_ship:
-            self._draw_ship(tmp_ship)
+        if new_ship:
+            self._draw_ship(new_ship, floating_ship=True)
 
 
-    def _draw_ship(self, ship):
-        if ship['alignment'] == 'hor':
-            ship_tokens = [self.ship_front_hor, self.ship_back_hor]
-            for _ in range(len(ship['coords']) - 2):
-                ship_tokens.insert(1, self.ship_center)
-            front_y, front_x = ship['coords'][0]
+    def _draw_ship(self, ship, floating_ship=False):
+        color = Colors.NEW_SHIP if floating_ship else Colors.SHIP
+        ship_string = str(ship)
+
+        if ship.alignment == 'hor':
+            front_y, front_x = ship.coords[0]
             self._win.addstr(
-                front_y+1, self._scale(front_x),
-                ' '.join(ship_tokens), Colors.SHIP
+                front_y+1, self._scale(front_x), ship_string, color
             )
         else:
-            y, x = ship['coords'][0]
-            self._win.addstr(
-                y+1, self._scale(x), self.ship_front_vert, Colors.SHIP
-            )
-            y, x = ship['coords'][-1]
-            self._win.addstr(
-                y+1, self._scale(x), self.ship_back_vert, Colors.SHIP
-            )
-            for y, x in ship['coords'][1:-1]:
-                self._win.addstr(
-                    y+1, self._scale(x), self.ship_center, Colors.SHIP
-                )
+            for i in range(ship.size):
+                y, x = ship.coords[i]
+                self._win.addstr(y+1, self._scale(x), ship_string[i], color)
 
 
     def _scale(self, x):

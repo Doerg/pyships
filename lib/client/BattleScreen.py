@@ -1,4 +1,4 @@
-from client import BattleWindows
+from client import BattleWindows, Ship
 from CustomExceptions import ProgramExit
 
 
@@ -38,28 +38,24 @@ def player_ship_placements():
     """
     _message_bar.put_message('Welcome to pyships! Please place your ships.')
     _message_bar.update()
+
     map_size = BattleWindows.logical_map_size
     the_map = [
         [False for _col in range(map_size)] for _row in range(map_size)
     ]
 
-    ships = (4, 4, 3, 3, 3, 2, 2)
+    Ship.Ship.setup_class_vars(_keys, the_map, map_size)
 
-    return [_position_ship(ship_size, the_map, map_size) for ship_size in ships]
+    for ship_size in (4, 4, 3, 3, 3, 2, 2):
+        ship = Ship.Ship(ship_size)
+        _position_ship(ship)
 
 
-def _position_ship(ship_size, the_map, map_size):
-    center = map_size//2
-    ship = {    # ship placement selection starts @ map center & horizontal
-        'alignment': 'hor',
-        'coords': [
-            [center, center - ship_size//2 + i] for i in range(ship_size)
-        ]
-    }
+def _position_ship(ship):
     misplacement = False
 
     while True:
-        _player_map.draw_map(tmp_ship=ship)
+        _player_map.draw_map(new_ship=ship)
         _player_map.update()
 
         key = _player_map.get_key()
@@ -68,13 +64,13 @@ def _position_ship(ship_size, the_map, map_size):
             raise ProgramExit
 
         if key in (_keys['up'], _keys['down'], _keys['left'], _keys['right']):
-            _move_ship(ship, key, map_size)
+            ship.move(key)
 
         elif key == _keys['rotate']:
-            _rotate_ship(ship, map_size)
+            ship.rotate()
 
         elif key == _keys['place ship']:
-            if _ship_blocked(ship, the_map):
+            if ship.blocked():
                 _message_bar.put_message(
                     'You have already placed a ship at this location. ' +
                     'Please choose another one.'
@@ -82,7 +78,7 @@ def _position_ship(ship_size, the_map, map_size):
                 _message_bar.update()
                 misplacement = True
             else:
-                _place_ship(ship, the_map)
+                ship.place_on_map()
                 _player_map.add_ship(ship)
                 if misplacement:
                     _message_bar.put_message('Please place your next ship.')
@@ -90,78 +86,4 @@ def _position_ship(ship_size, the_map, map_size):
                     misplacement = False
                 break
 
-    return ship['coords'] # server will only need coords
-
-
-def _move_ship(ship, direction, map_size):
-    coords = ship['coords']
-
-    if direction == _keys['up']:
-        if not coords[0][0] == 0:
-            for coord in coords:
-                coord[0] -= 1
-    elif direction == _keys['left']:
-        if not coords[0][1] == 0:
-            for coord in coords:
-                coord[1] -= 1
-    elif direction == _keys['down']:
-        if not coords[-1][0] == map_size-1:
-            for coord in coords:
-                coord[0] += 1
-    elif direction == _keys['right']:
-        if not coords[-1][1] == map_size-1:
-            for coord in coords:
-                coord[1] += 1
-
-
-def _rotate_ship(ship, map_size):
-    coords = ship['coords']
-    rotation_axis = len(coords)//2
-
-    if ship['alignment'] == 'hor':
-        _rotate_to_vertical(coords, rotation_axis)
-        ship['alignment'] = 'vert'
-    else:
-        _rotate_to_horizontal(coords, rotation_axis)
-        ship['alignment'] = 'hor'
-
-    _border_violation_correction(ship, map_size)
-
-
-def _rotate_to_vertical(coords, rotation_axis):
-    for i in range(len(coords)):
-        coords[i][0] -= rotation_axis - i
-        coords[i][1] += rotation_axis - i
-
-
-def _rotate_to_horizontal(coords, rotation_axis):
-    for i in range(len(coords)):
-        coords[i][0] += rotation_axis - i
-        coords[i][1] -= rotation_axis - i
-
-
-def _border_violation_correction(ship, map_size):
-    coords = ship['coords']
-
-    if ship['alignment'] == 'hor':  #correction of violations @ left & right
-        while coords[0][1] < 0:
-            _move_ship(ship, _keys['right'], map_size)
-        while coords[-1][1] > map_size-1:
-            _move_ship(ship, _keys['left'], map_size)
-    else:                           #correction of violations @ top & bottom
-        while coords[0][0] < 0:
-            _move_ship(ship, _keys['down'], map_size)
-        while coords[-1][0] > map_size-1:
-            _move_ship(ship, _keys['up'], map_size)
-
-
-def _ship_blocked(ship, the_map):
-    for row, col in ship['coords']:
-        if the_map[row][col]:
-            return True
-    return False
-
-
-def _place_ship(ship, the_map):
-    for row, col in ship['coords']:
-        the_map[row][col] = True
+    return ship.coords  # server will only need coords
