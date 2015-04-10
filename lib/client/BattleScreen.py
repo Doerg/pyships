@@ -34,7 +34,8 @@ def init(player_name):
 
 def player_ship_placements():
     """
-    lets player position his ships.
+    lets the player position his ships.
+    :return: coordinates of all placed ships
     """
     _message_bar.put_message('Welcome to pyships! Please place your ships.')
     _message_bar.update()

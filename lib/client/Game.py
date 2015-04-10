@@ -34,7 +34,6 @@ def run_client(stdscr):
 def establish_connection():
     """
     sets up a connection, requiring user input from the title screen.
-    can end the program if the user tells it to exit.
     :return: connection object of some sort
     """
     while True:

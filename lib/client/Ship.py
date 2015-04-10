@@ -78,6 +78,9 @@ class Ship(object):
 
 
     def rotate(self):
+        """
+        rotates this ship to the opposite orientation
+        """
         self.alignment = 'vert' if self.alignment == 'hor' else 'hor'
         self._build_string()
         self._rotate_coordinates()
@@ -109,6 +112,10 @@ class Ship(object):
 
 
     def blocked(self):
+        """
+        checks whether one of the ships coordinates is occupied by another ship
+        :return: true if a coord is occupied, false otherwise
+        """
         for row, col in self.coords:
             if self._battle_map[row][col]:
                 return True
@@ -116,5 +123,8 @@ class Ship(object):
 
 
     def place_on_map(self):
+        """
+        ultimately associates this ship with the map
+        """
         for row, col in self.coords:
             self._battle_map[row][col] = True

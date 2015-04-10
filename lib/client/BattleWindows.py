@@ -187,7 +187,7 @@ class BattleGround(Window):
 
     def add_ship(self, ship):
         """
-        add a ship to this battleground.
+        add a ship in order for it to be displayed on this battleground.
         :param ship: the ship to be added
         """
         self._ships.append(ship)
@@ -196,21 +196,18 @@ class BattleGround(Window):
     def draw_map(self, new_ship=None):
         """
         draws the battleground with all ships on it.
-        :param tmp_ship: an extra ship to display for this one drawing
+        :param new_ship: an extra ship to display for this one drawing
         """
         for row in range(1, map_height+1):
             for col in range(1, map_width+1):
                 self._win.addstr(row, col, '~∽'[(row+col) % 2])
         for ship in self._ships:
-            self._draw_ship(ship)
+            self._draw_ship(str(ship), Colors.SHIP)
         if new_ship:
-            self._draw_ship(new_ship, floating_ship=True)
+            self._draw_ship(str(new_ship), Colors.NEW_SHIP)
 
 
-    def _draw_ship(self, ship, floating_ship=False):
-        color = Colors.NEW_SHIP if floating_ship else Colors.SHIP
-        ship_string = str(ship)
-
+    def _draw_ship(self, ship_string, color):
         if ship.alignment == 'hor':
             front_y, front_x = ship.coords[0]
             self._win.addstr(
