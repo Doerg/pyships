@@ -202,12 +202,18 @@ class BattleGround(Window):
             for col in range(1, map_width+1):
                 self._win.addstr(row, col, '~∽'[(row+col) % 2])
         for ship in self._ships:
-            self._draw_ship(str(ship), Colors.SHIP)
+            self._draw_ship(ship, Colors.SHIP)
         if new_ship:
-            self._draw_ship(str(new_ship), Colors.NEW_SHIP)
+            if new_ship.blocked():
+                color = Colors.BLOCKED_SHIP
+            else:
+                color = Colors.PLACEABLE_SHIP
+            self._draw_ship(new_ship, color)
 
 
-    def _draw_ship(self, ship_string, color):
+    def _draw_ship(self, ship, color):
+        ship_string = str(ship)
+
         if ship.alignment == 'hor':
             front_y, front_x = ship.coords[0]
             self._win.addstr(
