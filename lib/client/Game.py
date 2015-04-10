@@ -1,5 +1,6 @@
 import curses
-from client import TitleScreen, BattleScreen
+from client.intro import TitleScreen
+from client.battle import BattleScreen
 from CustomExceptions import ProgramExit
 
 

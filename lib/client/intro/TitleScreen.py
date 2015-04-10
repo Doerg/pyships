@@ -1,4 +1,5 @@
-from client import TitleWindows, ColorDefinitions
+from client.intro import Panels
+from client import ColorDefinitions
 
 
 def init():
@@ -9,10 +10,10 @@ def init():
 
     ColorDefinitions.init_colors()
 
-    _background = TitleWindows.Background()
-    _name_prompt = TitleWindows.NamePrompt()
-    _ip_prompt = TitleWindows.IpPrompt()
-    _exit_prompt = TitleWindows.ExitPrompt()
+    _background = Panels.Background()
+    _name_prompt = Panels.NamePrompt()
+    _ip_prompt = Panels.IpPrompt()
+    _exit_prompt = Panels.ExitPrompt()
 
     _background.update()
 
