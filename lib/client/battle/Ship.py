@@ -36,6 +36,10 @@ class Ship(object):
 
 
     def _build_string(self):
+        """
+        construct a string of tokens used for representing the ship on the
+        visual map. these tokens differ, depending on the alignment of the ship.
+        """
         if self.alignment == 'hor':
             parts = [
                 self._tokens['horizontal']['front'],
@@ -79,7 +83,7 @@ class Ship(object):
 
     def rotate(self):
         """
-        rotates this ship to the opposite orientation
+        rotates this ship to the opposite orientation.
         """
         self.alignment = 'vert' if self.alignment == 'hor' else 'hor'
         self._build_string()
@@ -88,6 +92,9 @@ class Ship(object):
 
 
     def _rotate_coordinates(self):
+        """
+        adjust the ship's coordinates to the new alignment.
+        """
         if self.alignment == 'hor':
             for i in range(self.size):
                 self.coords[i][0] += self._rotation_axis - i
@@ -99,6 +106,12 @@ class Ship(object):
 
 
     def _correct_border_violations(self):
+        """
+        checks whether the rotation of the ship caused the ship to be out of
+        bounds. this can happen when the ship is rotated at the border of the
+        map. if this is the case, th ship will be moved inwards until the
+        ship no longer violates the map's borders.
+        """
         if self.alignment == 'hor':  #correction of violations @ left & right
             while self.coords[0][1] < 0:
                 self.move(self._directions['right'])

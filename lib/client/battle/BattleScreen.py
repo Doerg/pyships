@@ -38,8 +38,7 @@ def player_ship_placements():
     lets the player position his ships.
     :return: coordinates of all placed ships
     """
-    _message_bar.put_message('Welcome to pyships! Please place your ships.')
-    _message_bar.update()
+    _message('Welcome to pyships! Please place your ships.')
 
     map_size = Windows.logical_map_size
     the_map = [
@@ -57,6 +56,10 @@ def player_ship_placements():
 
 
 def _position_ship(ship):
+    """
+    does user interaction in order to place a new ship on the map.
+    :param ship: the ship to be placed on the map
+    """
     misplacement = False
 
     while True:
@@ -76,19 +79,26 @@ def _position_ship(ship):
 
         elif key == _keys['place ship']:
             if ship.blocked():
-                _message_bar.put_message(
+                _message(
                     'You have already placed a ship at this location. ' +
                     'Please choose another one.'
                 )
-                _message_bar.update()
                 misplacement = True
             else:
                 ship.place_on_map()
                 _player_map.add_ship(ship)
                 if misplacement:
-                    _message_bar.put_message('Please place your next ship.')
-                    _message_bar.update()
+                    _message('Please place your next ship.')
                     misplacement = False
                 break
 
     return ship.coords  # server will only need coords
+
+
+def _message(msg):
+    """
+    writes the message to the message bar and displays it.
+    :param msg: the message to display
+    """
+    _message_bar.put_message(msg)
+    _message_bar.update()

@@ -51,6 +51,10 @@ class Window(object):
 
 
     def get_key(self):
+        """
+        returns a keypress.
+        :return: the key code of the pressed key
+        """
         return self._win.getch()
 
 
@@ -132,21 +136,33 @@ class KeyLegend(Window):
 
 
     def _set_keys(self, keys):
+        """
+        puts a new key description into the key legend.
+        :param keys: a list of tuples holding pairs of key/description strings
+        """
         self._clear_legend()
         self._win.move(self._text_line, 1)
 
         for key, description in keys:
-            self._add_key(key, description)
+            self._append_key(key, description)
 
 
     def _clear_legend(self):
+        """
+        fills key legend with blanks in order to clear it.
+        """
         self._win.addstr(
             self._text_line, info_padding, ' ' * (legend_width-info_padding-1),
             Colors.LEGEND
         )
 
 
-    def _add_key(self, key, description):
+    def _append_key(self, key, description):
+        """
+        appends a key/description pair to the key legend.
+        :param key: name of the key
+        :param description: description of the key
+        """
         self._win.addstr(' ' * info_padding + key + ': ', Colors.LEGEND)
         self._win.addstr('  %s  ' % description, Colors.LEGEND_ENTRY)
 
@@ -212,6 +228,11 @@ class BattleGround(Window):
 
 
     def _draw_ship(self, ship, color):
+        """
+        draws a ship onto the map.
+        :param ship: the ship to draw
+        :param color: the color to use for the drawing
+        """
         ship_string = str(ship)
 
         if ship.alignment == 'hor':
@@ -226,6 +247,13 @@ class BattleGround(Window):
 
 
     def _scale(self, x):
+        """
+        translate the given logical x-coordinate to the graphical x-coordinate
+        to be displayed on the visual map. this is necessary b/c the
+        graphical map has twice the width (-1) of the logical map.
+        :param x: the x-coordinate of the logical map
+        :return: the scaled x-coordinate
+        """
         return x*2 + 1
 
 
@@ -261,6 +289,9 @@ class MessageBar(Window):
 
 
     def _clear_bar(self):
+        """
+        fills message bar with blanks in order to clear it.
+        """
         self._win.addstr(
             self._text_line, info_padding, ' ' * (message_width-info_padding-1)
         )
