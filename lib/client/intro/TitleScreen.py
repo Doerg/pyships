@@ -1,19 +1,16 @@
-from client.intro import Panels
-from client import ColorDefinitions
+from client.intro.Panels import *
 
 
 def init():
     """
-    initialises all the panels of the title screen and displays the background.
+    initializes all the panels of the title screen and displays the background.
     """
     global _background, _name_prompt, _ip_prompt, _exit_prompt
 
-    ColorDefinitions.init_colors()
-
-    _background = Panels.Background()
-    _name_prompt = Panels.NamePrompt()
-    _ip_prompt = Panels.IpPrompt()
-    _exit_prompt = Panels.ExitPrompt()
+    _background = Background()
+    _name_prompt = NamePrompt()
+    _ip_prompt = IpPrompt()
+    _exit_prompt = ExitPrompt()
 
     _background.update()
 

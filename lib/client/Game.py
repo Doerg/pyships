@@ -1,4 +1,5 @@
 import curses
+from client import UIData
 from client.intro import TitleScreen
 from client.battle import BattleScreen
 from CustomExceptions import ProgramExit
@@ -18,6 +19,8 @@ def run_client(stdscr):
     :param stdscr: curses default window, passed by wrapper method
     """
     try:
+        UIData.init_colors()
+
         TitleScreen.init()
         connection, player_name = establish_connection()
         TitleScreen.uninit()

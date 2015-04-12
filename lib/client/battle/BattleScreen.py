@@ -1,30 +1,22 @@
-from client.battle import Windows
-from client.battle.Ship import Ship
 from CustomExceptions import ProgramExit
-
-
-# usable keys
-_keys = {
-    'up': 65,    #curses returns these codes for arrow keys. like wtf?
-    'down': 66,
-    'left': 68,
-    'right': 67,
-    'rotate': ord(' '),
-    'place ship': 10,   #enter
-    'fire': 10,
-    'exit': ord('q')
-}
+from client.battle.Windows import *
+from client.battle.Ship import Ship
+from client import UIData
 
 
 def init(player_name):
+    """
+    initializes all the windows of the battle screen and displays them.
+    :param player_name: the name of the player
+    """
     global _content_frame, _key_legend, _message_bar
     global _player_map, _opponent_map, _player_name
 
-    _content_frame = Windows.ContentFrame(player_name)
-    _key_legend = Windows.KeyLegend()
-    _player_map = Windows.BattleGround()
-    _opponent_map = Windows.BattleGround(opponent=True)
-    _message_bar = Windows.MessageBar()
+    _content_frame = ContentFrame(player_name)
+    _key_legend = KeyLegend()
+    _player_map = BattleGround()
+    _opponent_map = BattleGround(opponent=True)
+    _message_bar = MessageBar()
 
     _content_frame.update()
     _key_legend.update()
@@ -36,16 +28,16 @@ def init(player_name):
 def player_ship_placements():
     """
     lets the player position his ships.
-    :return: coordinates of all placed ships
+    :return: the coordinates of all placed ships
     """
     _message('Welcome to pyships! Please place your ships.')
 
-    map_size = Windows.logical_map_size
+    map_size = UIData.battle['map']['logical size']
     the_map = [
         [False for _col in range(map_size)] for _row in range(map_size)
     ]
 
-    Ship.setup_class_vars(_keys, the_map, map_size)
+    Ship.setup_class_vars(the_map, map_size)
 
     coords = [_position_ship(Ship(size)) for size in (4, 4, 3, 3, 3, 2, 2)]
 
@@ -59,7 +51,9 @@ def _position_ship(ship):
     """
     does user interaction in order to place a new ship on the map.
     :param ship: the ship to be placed on the map
+    :return: the coordinates of the placed ship
     """
+    keys = UIData.key_codes
     misplacement = False
 
     while True:
@@ -68,16 +62,16 @@ def _position_ship(ship):
 
         key = _player_map.get_key()
 
-        if key == _keys['exit']:
+        if key == keys['exit']:
             raise ProgramExit
 
-        if key in (_keys['up'], _keys['down'], _keys['left'], _keys['right']):
+        if key in (keys['up'], keys['down'], keys['left'], keys['right']):
             ship.move(key)
 
-        elif key == _keys['rotate']:
+        elif key == keys['rotate']:
             ship.rotate()
 
-        elif key == _keys['place ship']:
+        elif key == keys['place ship']:
             if ship.blocked():
                 _message(
                     'You have already placed a ship at this location. ' +

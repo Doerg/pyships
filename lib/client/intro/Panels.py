@@ -1,39 +1,7 @@
 import curses
 import curses.panel
-from client import ColorDefinitions as Colors
+from client import UIData
 
-
-### UI data ###
-
-# logo
-logo_hpad = 1
-logo_vpad = 3
-logo_vert_loc = 0.1
-
-# name/ip prompt
-name_text = "Your name:"
-ip_text = "Host IP:"
-logon_hpad = 3
-logon_vpad = 1
-logon_vert_loc = 0.7
-logon_input_offset = len(
-    max((name_text, ip_text), key=lambda s: len(s))
-) + 2*logon_hpad
-logon_input_limit = 15
-logon_width = logon_input_offset + logon_input_limit + logon_hpad
-logon_height = 3
-
-# exit prompt
-exit_text = "Connection could not be established! Exit? (y/n)"
-exit_hpad = 3
-exit_vpad = 1
-exit_height = 3
-exit_width = len(exit_text) + 2*exit_hpad
-exit_vert_loc = 0.75
-
-
-
-### classes ###
 
 class Panel(object):
     """
@@ -65,6 +33,15 @@ class Background(Panel):
     """
     title screen backround including ocean, ships and pyships logo.
     """
+    _logo = [line for line in open("assets/front_logo.txt")]
+    _logo_height = len(_logo)
+    _logo_width = len(max(_logo, key=lambda line: len(line)))
+    _logo_hpadding = UIData.intro['logo']['hpadding']
+    _logo_vpadding = UIData.intro['logo']['vpadding']
+    _logo_rel_vert_loc = UIData.intro['logo']['relative vertical location']
+    _water_tokens = UIData.tokens['ocean']
+    _ship_tokens = UIData.tokens['ship']
+
     def __init__(self):
         super().__init__(curses.LINES, curses.COLS, 0, 0)
 
@@ -85,7 +62,7 @@ class Background(Panel):
         """
         removes all content from the background.
         """
-        self._win.bkgd(Colors.CLEAR)
+        self._win.bkgd(UIData.colors['clear'])
         self._win.clear()
 
 
@@ -93,11 +70,13 @@ class Background(Panel):
         """
         puts water tokens on the background window.
         """
-        self._win.bkgdset(' ', Colors.OCEAN)
+        self._win.bkgdset(' ', UIData.colors['ocean'])
         for row in range(curses.LINES):
             for col in range(curses.COLS):
                 try:
-                    self._win.addstr(row, col, '~∽'[(row+col) % 2])
+                    self._win.addstr(
+                        row, col, self._water_tokens[(row+col) % 2]
+                    )
                 except curses.error:
                     pass
 
@@ -106,25 +85,38 @@ class Background(Panel):
         """
         puts decorative ships on the background window.
         """
-        vert_center = curses.LINES//2
+        front_hor = self._ship_tokens['horizontal']['front']
+        back_hor = self._ship_tokens['horizontal']['back']
+        front_vert = self._ship_tokens['vertical']['front']
+        back_vert = self._ship_tokens['vertical']['back']
+        center = self._ship_tokens['center']
 
-        self._win.bkgdset(' ', Colors.SHIP)
-        self._win.addstr(vert_center - 15, 17, '▲')
-        self._win.addstr(vert_center - 14, 17, '▣')
-        self._win.addstr(vert_center - 13, 17, '▼')
+        vert_middle = curses.LINES//2
 
-        self._win.addstr(vert_center,     8, '▲')
-        self._win.addstr(vert_center + 1, 8, '▣')
-        self._win.addstr(vert_center + 2, 8, '▣')
-        self._win.addstr(vert_center + 3, 8, '▼')
+        self._win.bkgdset(' ', UIData.colors['ship'])
+        self._win.addstr(vert_middle - 15, 17, front_vert)
+        self._win.addstr(vert_middle - 14, 17, center)
+        self._win.addstr(vert_middle - 13, 17, back_vert)
 
-        self._win.addstr(vert_center + 12, 14, '▲')
-        self._win.addstr(vert_center + 13, 14, '▣')
-        self._win.addstr(vert_center + 14, 14, '▼')
+        self._win.addstr(vert_middle,     8, front_vert)
+        self._win.addstr(vert_middle + 1, 8, center)
+        self._win.addstr(vert_middle + 2, 8, center)
+        self._win.addstr(vert_middle + 3, 8, back_vert)
 
-        self._win.addstr(vert_center - 5, curses.COLS-15, '◀ ▶')
-        self._win.addstr(vert_center, curses.COLS-18, '◀ ▣ ▣ ▶')
-        self._win.addstr(vert_center + 6, curses.COLS-13, '◀ ▶')
+        self._win.addstr(vert_middle + 12, 14, front_vert)
+        self._win.addstr(vert_middle + 13, 14, center)
+        self._win.addstr(vert_middle + 14, 14, back_vert)
+
+        self._win.addstr(
+            vert_middle - 5, curses.COLS-15, ' '.join((front_hor, back_hor))
+        )
+        self._win.addstr(
+            vert_middle, curses.COLS-18,
+            ' '.join((front_hor, center, center, back_hor))
+        )
+        self._win.addstr(
+            vert_middle + 6, curses.COLS-13, ' '.join((front_hor, back_hor))
+        )
 
 
     def _place_logo(self):
@@ -132,45 +124,52 @@ class Background(Panel):
         places the pyships logo on the background. uses an extra curses window
         to achieve this.
         """
-        logo = [line for line in open("assets/front_logo.txt")]
-        logo_height = len(logo)
-        logo_width = len(max(logo, key=lambda line: len(line)))
-
         self._logo_box = curses.newwin(
-            logo_height + logo_vpad*2,
-            logo_width + logo_hpad*2,
-            int(curses.LINES * logo_vert_loc),
-            curses.COLS//2 - logo_width//2
+            self._logo_height + self._logo_vpadding*2,
+            self._logo_width + self._logo_hpadding*2,
+            int(curses.LINES * self._logo_rel_vert_loc),
+            curses.COLS//2 - self._logo_width//2
         )
 
-        self._logo_box.bkgd(' ', Colors.LOGO_BOX)
+        self._logo_box.bkgd(' ', UIData.colors['logo box'])
         self._logo_box.box()
 
-        self._logo_box.bkgdset(' ', curses.A_BOLD | Colors.LOGO_BOX)
-        for y, row in enumerate(logo):
+        self._logo_box.bkgdset(' ', curses.A_BOLD | UIData.colors['logo box'])
+        for y, row in enumerate(self._logo):
             for x, cell in enumerate(row.rstrip()):
                 try:
-                    self._logo_box.addstr(y + logo_vpad, x + logo_hpad, cell)
+                    self._logo_box.addstr(
+                        y + self._logo_vpadding, x + self._logo_hpadding, cell
+                    )
                 except curses.error:
                     pass
 
 
 
-# don't instantiate this class directly, choose one of NamePrompt and IpPrompt!
 class LogonPrompt(Panel):
     """
-    generic class to be inherited from NamePrompt and IpPrompt.
+    generic class to be inherited from NamePrompt and IpPrompt. don't
+    directly, choose one of NamePrompt and IpPrompt instead.
     """
+    _ui_data = UIData.intro['logon prompt']
+    _input_offset = _ui_data['input offset']
+    _input_limit = _ui_data['input limit']
+    _height = _ui_data['height']
+    _width = _ui_data['width']
+    _rel_vert_loc = _ui_data['relative vertical location']
+    _hpadding = _ui_data['hpadding']
+    _vpadding = _ui_data['vpadding']
+
     def __init__(self, text, vert_offset=0):
         super().__init__(
-            logon_height, logon_width,
-            int(curses.LINES * logon_vert_loc) + vert_offset,
-            curses.COLS//2 - logon_width//2
+            self._height, self._width,
+            int(curses.LINES * self._rel_vert_loc) + vert_offset,
+            curses.COLS//2 - self._width//2
         )
 
-        self._win.bkgd(' ', Colors.PROMPT_BOX)
+        self._win.bkgd(' ', UIData.colors['prompt box'])
         self._win.box()
-        self._win.addstr(logon_vpad, logon_hpad, text, curses.A_BOLD)
+        self._win.addstr(self._vpadding, self._hpadding, text, curses.A_BOLD)
 
 
     def show(self):
@@ -178,7 +177,7 @@ class LogonPrompt(Panel):
         clears out all previous user input in this prompt using blanks before
         displaying the prompt.
         """
-        self._win.addstr(1, logon_input_offset, ' ' * logon_input_limit)
+        self._win.addstr(1, self._input_offset, ' ' * self._input_limit)
         super().show()
 
 
@@ -188,7 +187,7 @@ class LogonPrompt(Panel):
         """
         curses.echo()
         curses.curs_set(True)
-        user_input = self._win.getstr(1, logon_input_offset, logon_input_limit)
+        user_input = self._win.getstr(1, self._input_offset, self._input_limit)
         return user_input.rstrip()
 
 
@@ -197,8 +196,10 @@ class NamePrompt(LogonPrompt):
     """
     panel asking for the user name.
     """
+    _text = LogonPrompt._ui_data['name text']
+
     def __init__(self):
-        super().__init__(name_text)
+        super().__init__(self._text)
 
 
 
@@ -206,8 +207,14 @@ class IpPrompt(LogonPrompt):
     """
     panel asking for the host ip.
     """
+    _text = LogonPrompt._ui_data['ip text']
+    _vert_offset = LogonPrompt._ui_data['gap']
+
     def __init__(self):
-        super().__init__(ip_text, vert_offset=6)
+        super().__init__(
+            UIData.intro['logon prompt']['ip text'],
+            vert_offset=self._vert_offset
+        )
 
 
 
@@ -215,16 +222,26 @@ class ExitPrompt(Panel):
     """
     panel asking whether user wants to exit the program.
     """
+    _ui_data = UIData.intro['exit prompt']
+    _text = _ui_data['text']
+    _hpadding = _ui_data['hpadding']
+    _vpadding = _ui_data['vpadding']
+    _rel_vert_loc = _ui_data['relative vertical location']
+    _height = _ui_data['height']
+    _width = _ui_data['width']
+
     def __init__(self):
         super().__init__(
-            exit_height, exit_width,
-            int(curses.LINES * exit_vert_loc),
-            curses.COLS//2 - exit_width//2
+            self._height, self._width,
+            int(curses.LINES * self._rel_vert_loc),
+            curses.COLS//2 - self._width//2
         )
 
-        self._win.bkgd(' ', Colors.PROMPT_BOX)
+        self._win.bkgd(' ', UIData.colors['prompt box'])
         self._win.box()
-        self._win.addstr(exit_vpad, exit_hpad, exit_text, curses.A_BOLD)
+        self._win.addstr(
+            self._vpadding, self._hpadding, self._text, curses.A_BOLD
+        )
 
 
     def get_answer(self):

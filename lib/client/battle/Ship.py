@@ -1,20 +1,23 @@
+from client import UIData
+
+
 class Ship(object):
-    _tokens = {
-        'horizontal': {'front': '◀', 'back': '▶'},
-        'vertical': {'front': '▲', 'back': '▼'},
-        'center': '▣'
-    }
+    """
+    this class represents a ship including coordinates, tokens and all the
+    movement/rotation/placement logic needed during the ship placement phase
+    of the game
+    """
+    _tokens = UIData.tokens['ship']
 
     @classmethod
-    def setup_class_vars(cls, keys, battle_map, map_size):
+    def setup_class_vars(cls, battle_map, map_size):
         """
         sets up variables used by all instances of ships
-        :param keys: curses key codes to extract directional keys from
         :param battle_map: the map on which all ships are to be placed
         :param map_size: size of the map
         """
         cls._directions = {
-            key_name: key_code for key_name, key_code in keys.items()
+            key_name: code for key_name, code in UIData.key_codes.items()
             if key_name in ('up', 'down', 'left', 'right')
         }
         cls._battle_map = battle_map
@@ -22,6 +25,10 @@ class Ship(object):
 
 
     def __init__(self, size):
+        """
+        initialize a ship object.
+        :param size: the length of the ship
+        """
         center = self._map_size//2
         self.coords = [[center, center - size//2 + i] for i in range(size)]
         self.alignment = 'hor'
@@ -109,7 +116,7 @@ class Ship(object):
         """
         checks whether the rotation of the ship caused the ship to be out of
         bounds. this can happen when the ship is rotated at the border of the
-        map. if this is the case, th ship will be moved inwards until the
+        map. if this is the case, the ship will be moved inwards until the
         ship no longer violates the map's borders.
         """
         if self.alignment == 'hor':  #correction of violations @ left & right
