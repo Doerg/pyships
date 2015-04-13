@@ -1,4 +1,4 @@
-from client.intro.Panels import *
+from .Panels import *
 
 
 def init():

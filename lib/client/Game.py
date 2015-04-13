@@ -1,7 +1,5 @@
 import curses
-from client import UIData
-from client.intro import TitleScreen
-from client.battle import BattleScreen
+from . import UIData, TitleScreen, BattleScreen
 from CustomExceptions import ProgramExit
 
 
@@ -15,7 +13,7 @@ def run():
 
 def run_client(stdscr):
     """
-    client game logic.
+    top level game logic.
     :param stdscr: curses default window, passed by wrapper method
     """
     try:

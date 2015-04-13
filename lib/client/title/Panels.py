@@ -36,9 +36,9 @@ class Background(Panel):
     _logo = [line for line in open("assets/front_logo.txt")]
     _logo_height = len(_logo)
     _logo_width = len(max(_logo, key=lambda line: len(line)))
-    _logo_hpadding = UIData.intro['logo']['hpadding']
-    _logo_vpadding = UIData.intro['logo']['vpadding']
-    _logo_rel_vert_loc = UIData.intro['logo']['relative vertical location']
+    _logo_hpadding = UIData.title['logo']['hpadding']
+    _logo_vpadding = UIData.title['logo']['vpadding']
+    _logo_rel_vert_loc = UIData.title['logo']['relative vertical location']
     _water_tokens = UIData.tokens['ocean']
     _ship_tokens = UIData.tokens['ship']
 
@@ -149,9 +149,9 @@ class Background(Panel):
 class LogonPrompt(Panel):
     """
     generic class to be inherited from NamePrompt and IpPrompt. don't
-    directly, choose one of NamePrompt and IpPrompt instead.
+    instantiate directly, choose one of NamePrompt and IpPrompt instead.
     """
-    _ui_data = UIData.intro['logon prompt']
+    _ui_data = UIData.title['logon prompt']
     _input_offset = _ui_data['input offset']
     _input_limit = _ui_data['input limit']
     _height = _ui_data['height']
@@ -184,6 +184,7 @@ class LogonPrompt(Panel):
     def get_input(self):
         """
         queries user string input from this prompt.
+        :return: user string input
         """
         curses.echo()
         curses.curs_set(True)
@@ -212,7 +213,7 @@ class IpPrompt(LogonPrompt):
 
     def __init__(self):
         super().__init__(
-            UIData.intro['logon prompt']['ip text'],
+            UIData.title['logon prompt']['ip text'],
             vert_offset=self._vert_offset
         )
 
@@ -222,7 +223,7 @@ class ExitPrompt(Panel):
     """
     panel asking whether user wants to exit the program.
     """
-    _ui_data = UIData.intro['exit prompt']
+    _ui_data = UIData.title['exit prompt']
     _text = _ui_data['text']
     _hpadding = _ui_data['hpadding']
     _vpadding = _ui_data['vpadding']

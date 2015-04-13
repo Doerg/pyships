@@ -34,7 +34,7 @@ tokens = {
 
 
 ### TITLE SCREEN DATA ###
-intro = {
+title = {
     'logo': {
         'hpadding': 1,
         'vpadding': 3,
@@ -58,7 +58,7 @@ intro = {
         'height': 3
     }
 }
-logon_prompt = intro['logon prompt']
+logon_prompt = title['logon prompt']
 logon_prompt['input offset'] = len(
     max(
         (logon_prompt['name text'], logon_prompt['ip text']),
@@ -69,7 +69,7 @@ logon_prompt['width'] = logon_prompt['input offset'] + \
                         logon_prompt['input limit'] + \
                         logon_prompt['hpadding']
 
-exit_prompt = intro['exit prompt']
+exit_prompt = title['exit prompt']
 exit_prompt['width'] = len(exit_prompt['text']) + 2*exit_prompt['hpadding']
 
 

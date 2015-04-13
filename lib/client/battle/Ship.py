@@ -5,14 +5,14 @@ class Ship(object):
     """
     this class represents a ship including coordinates, tokens and all the
     movement/rotation/placement logic needed during the ship placement phase
-    of the game
+    of the game.
     """
     _tokens = UIData.tokens['ship']
 
     @classmethod
     def setup_class_vars(cls, battle_map, map_size):
         """
-        sets up variables used by all instances of ships
+        sets up variables used by all instances of ships.
         :param battle_map: the map on which all ships are to be placed
         :param map_size: size of the map
         """
@@ -67,7 +67,7 @@ class Ship(object):
 
     def move(self, direction):
         """
-        lets the ship move on the map in the given direction, if possible
+        lets the ship move on the map in the given direction, if possible.
         :param direction: direction to move to, given as curses key code
         """
         if direction == self._directions['up']:
@@ -124,7 +124,7 @@ class Ship(object):
                 self.move(self._directions['right'])
             while self.coords[-1][1] > self._map_size-1:
                 self.move(self._directions['left'])
-        else:                           #correction of violations @ top & bottom
+        else:                        #correction of violations @ top & bottom
             while self.coords[0][0] < 0:
                 self.move(self._directions['down'])
             while self.coords[-1][0] > self._map_size-1:
@@ -134,7 +134,7 @@ class Ship(object):
     def blocked(self):
         """
         checks whether one of the ships coordinates is occupied by another ship
-        :return: true if a coord is occupied, false otherwise
+        :return: true if a coordinate is occupied, false otherwise
         """
         for row, col in self.coords:
             if self._battle_map[row][col]:
@@ -144,7 +144,7 @@ class Ship(object):
 
     def place_on_map(self):
         """
-        ultimately associates this ship with the map
+        ultimately associates this ship with the map.
         """
         for row, col in self.coords:
             self._battle_map[row][col] = True

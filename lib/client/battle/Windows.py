@@ -12,6 +12,10 @@ class Window(object):
         """
         initializer for all windows. the y and x values are interpreted as
         offsets from the upper left corner of the central frame window.
+        :param height: number of rows of the window
+        :param width: number of columns of the window
+        :param y: row offset of the window in respect to the content frame
+        :param x: column offset of the window in respect to the content frame
         """
         frame_height = UIData.battle['frame']['height']
         frame_width = UIData.battle['frame']['width']
@@ -99,7 +103,6 @@ class BattleGround(Window):
         true. default is left side (false).
         """
         legend_height = UIData.battle['info bar']['height']
-
         if opponent:
             offset_x = self._box_width + 3*Window._margin + 2
         else:
@@ -189,8 +192,8 @@ class InfoBar(Window):
         """
         common constructor for info bars. only needs the y and x coordinates
         as arguments b/c all info bars have the same size.
-        :param y: vertical offset of the window
-        :param x: horizontal offset of the window
+        :param y: row offset of the window in respect to the content frame
+        :param x: column offset of the window in respect to the content frame
         """
         self._text_line = self._height//2
         super().__init__(self._height, self._width, y, x)
