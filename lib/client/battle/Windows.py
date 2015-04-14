@@ -84,10 +84,11 @@ class ContentFrame(Window):
 
 
 
-class BattleGround(Window):
+class BattleMap(Window):
     """
     square window which displays the battleground of the player or opponent.
-    the battle screen contains two of these.
+    the battle screen contains two of these. don't instantiate directly, use
+    one of PlayerMap or OpponentMap instead.
     """
     _ui_data = UIData.battle['map']
     _height = _ui_data['height']
@@ -95,18 +96,15 @@ class BattleGround(Window):
     _box_height = _ui_data['box']['height']
     _box_width = _ui_data['box']['width']
     _water_tokens = UIData.tokens['ocean']
+    _hit_token = UIData.tokens['hit']
+    _miss_token = UIData.tokens['miss']
 
-    def __init__(self, opponent=False):
+    def __init__(self, offset_x):
         """
         draws one of the two battlegrounds of the screen.
-        :param opponent: draws the battleground on the right side, if set to
-        true. default is left side (false).
+        :param offset_x: offset column in respect to the content frame
         """
         legend_height = UIData.battle['info bar']['height']
-        if opponent:
-            offset_x = self._box_width + 3*Window._margin + 2
-        else:
-            offset_x = Window._margin + 1
 
         super().__init__(
             self._box_height, self._box_width,
@@ -146,6 +144,19 @@ class BattleGround(Window):
             self._draw_ship(new_ship, color)
 
 
+    def display_shot(self, coord, is_hit):
+        if is_hit:
+            token = self._hit_token
+            color = UIData.colors['hit']
+        else:
+            token = self._miss_token
+            color = UIData.colors['miss']
+
+        self._win.addstr(
+            self._scale_y(coord[0]), self._scale_x(coord[1]), token, color
+        )
+
+
     def _draw_ship(self, ship, color):
         """
         draws a ship onto the map.
@@ -157,15 +168,28 @@ class BattleGround(Window):
         if ship.alignment == 'hor':
             front_y, front_x = ship.coords[0]
             self._win.addstr(
-                front_y+1, self._scale(front_x), ship_string, color
+                self._scale_y(front_y), self._scale_x(front_x),
+                ship_string, color
             )
         else:
             for i in range(ship.size):
                 y, x = ship.coords[i]
-                self._win.addstr(y+1, self._scale(x), ship_string[i], color)
+                self._win.addstr(
+                    self._scale_y(y), self._scale_x(x), ship_string[i], color
+                )
 
 
-    def _scale(self, x):
+    def _scale_y(self, y):
+        """
+        translate the given logical x-coordinate to the graphical x-coordinate
+        to be displayed on the visual map.
+        :param y: the y-coordinate of the logical map
+        :return: the scaled y-coordinate
+        """
+        return y + 1
+
+
+    def _scale_x(self, x):
         """
         translate the given logical x-coordinate to the graphical x-coordinate
         to be displayed on the visual map. this is necessary b/c the
@@ -174,6 +198,28 @@ class BattleGround(Window):
         :return: the scaled x-coordinate
         """
         return x*2 + 1
+
+
+
+class PlayerMap(BattleMap):
+    """
+    the player's map.
+    """
+    def __init__(self):
+        super().__init__(Window._margin + 1)
+
+
+
+class OpponentMap(BattleMap):
+    """
+    the opponent's map.
+    """
+    def __init__(self):
+        super().__init__(self._box_width + 3*Window._margin + 2)
+
+
+    def reveal_ship(self, ship):
+        self._draw_ship(ship, UIData.colors['hit'])
 
 
 

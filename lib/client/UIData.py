@@ -18,6 +18,8 @@ key_codes = {
 ### TOKEN DATA ###
 tokens = {
     'ocean': '~∽',
+    'hit': '❃',
+    'miss': '◎',
     'ship': {
         'horizontal': {
             'front': '◀',
@@ -140,6 +142,8 @@ def init_colors():
     curses.init_pair(12, curses.COLOR_WHITE, curses.COLOR_CYAN)
     curses.init_pair(13, curses.COLOR_GREEN, curses.COLOR_BLUE)
     curses.init_pair(14, curses.COLOR_RED, curses.COLOR_BLUE)
+    curses.init_pair(15, curses.COLOR_RED, curses.COLOR_BLUE)
+    curses.init_pair(16, curses.COLOR_WHITE, curses.COLOR_BLUE)
 
     colors['clear'] = curses.color_pair(1)
     colors['ocean'] = curses.color_pair(2)
@@ -155,3 +159,5 @@ def init_colors():
     colors['battle frame'] = curses.color_pair(12)
     colors['placeable ship'] = curses.color_pair(13)
     colors['blocked ship'] = curses.color_pair(14)
+    colors['hit'] = curses.color_pair(15)
+    colors['miss'] = curses.color_pair(16)
