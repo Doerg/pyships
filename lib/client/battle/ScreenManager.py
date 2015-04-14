@@ -39,7 +39,8 @@ def player_ship_placements():
 
     Ship.setup_class_vars(the_map, map_size)
 
-    coords = [_position_ship(Ship(size)) for size in (4, 4, 3, 3, 3, 2, 2)]
+    ships = (5, 4, 4, 3, 3, 3, 2, 2, 2, 2)
+    coords = [_position_ship(Ship(size)) for size in ships]
 
     _player_map.draw_map()
     _player_map.update()
