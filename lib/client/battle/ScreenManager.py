@@ -14,13 +14,20 @@ def init(player_name):
 
     _content_frame = ContentFrame(player_name)
     _key_legend = KeyLegend()
-    _player_map = BattleGround()
-    _opponent_map = BattleGround(opponent=True)
+    _player_map = PlayerMap()
+    _opponent_map = OpponentMap()
     _message_bar = MessageBar()
 
     _content_frame.update()
     _key_legend.update()
     _player_map.update()
+
+    _opponent_map.display_shot((3,4), False)    #remove me
+    _opponent_map.display_shot((5,14), False)   #remove me
+    _opponent_map.display_shot((6,14), False)   #remove me
+    _opponent_map.display_shot((10,17), True)   #remove me
+    _opponent_map.display_shot((10,18), True)   #remove me
+
     _opponent_map.update()
     _message_bar.update()
 
@@ -38,6 +45,8 @@ def player_ship_placements():
     ]
 
     Ship.setup_class_vars(the_map, map_size)
+    _opponent_map.reveal_ship(Ship(5))   #remove me
+    _opponent_map.update()   #remove me
 
     ships = (5, 4, 4, 3, 3, 3, 2, 2, 2, 2)
     coords = [_position_ship(Ship(size)) for size in ships]
