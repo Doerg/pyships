@@ -14,7 +14,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     #TODO set logging level via args
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(filename)s:%(funcName)s:%(msg)s")
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(filename)s:%(funcName)s:%(message)s")
 
     if args.server:
         #from Server import Server or something
