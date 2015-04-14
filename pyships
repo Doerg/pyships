@@ -3,7 +3,7 @@
 from sys import path
 path.append('lib')  #add lib folder to module search path
 from argparse import ArgumentParser
-
+import logging
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='pyships: play Battleships via LAN')
@@ -12,6 +12,9 @@ if __name__ == "__main__":
         help='start a pyships server'
     )
     args = parser.parse_args()
+
+    #TODO set logging level via args
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(filename)s:%(funcName)s:%(msg)s")
 
     if args.server:
         #from Server import Server or something
