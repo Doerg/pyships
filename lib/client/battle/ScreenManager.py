@@ -107,3 +107,16 @@ def reveal_ship(coords):
     ship = Ship(len(coords), coords=coords)
     _opponent_map.reveal_ship(ship)
     _opponent_map.update()
+
+
+def show_shot(coords, is_hit, opponent=False):
+    """
+    displays a shot on the player's map per default, or on the opponent's map
+    if the flag 'opponent' is set to true.
+    :param coords: coordinates of the shot
+    :param is_hit: whether the shot to display is a hit
+    :param opponent: whether the shot is to be displayed on the opponent's map
+    """
+    map_to_update = _opponent_map if opponent else _player_map
+    map_to_update.display_shot(coords, is_hit)
+    map_to_update.update()

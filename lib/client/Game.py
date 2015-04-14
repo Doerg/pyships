@@ -26,14 +26,17 @@ def run_client(stdscr):
         BattleScreen.init(player_name)
 
         BattleScreen.reveal_ship(((4, 5), (4, 6), (4, 7), (4, 8)))   #remove me
-        BattleScreen._opponent_map.display_shot((3,4), False)    #remove me
-        BattleScreen._opponent_map.display_shot((5,14), False)   #remove me
-        BattleScreen._opponent_map.display_shot((6,14), False)   #remove me
-        BattleScreen._opponent_map.display_shot((10,17), True)   #remove me
-        BattleScreen._opponent_map.display_shot((10,18), True)   #remove me
-        BattleScreen._opponent_map.update()  #remove me
+        BattleScreen.show_shot((3,4), False, opponent=True)    #remove me
+        BattleScreen.show_shot((5,14), False, opponent=True)   #remove me
+        BattleScreen.show_shot((6,14), False, opponent=True)   #remove me
+        BattleScreen.show_shot((10,17), True, opponent=True)   #remove me
+        BattleScreen.show_shot((10,18), True, opponent=True)   #remove me
 
         ship_placements = BattleScreen.player_ship_placements()
+
+        BattleScreen.show_shot((6,14), False)   #remove me
+        BattleScreen.show_shot((10,17), True)   #remove me
+        BattleScreen.show_shot((10,18), True)   #remove me
 
         BattleScreen._key_legend.set_battle_keys()  #remove me
         BattleScreen._key_legend.update()           #remove me

@@ -144,19 +144,6 @@ class BattleMap(Window):
             self._draw_ship(new_ship, color)
 
 
-    def display_shot(self, coord, is_hit):
-        if is_hit:
-            token = self._hit_token
-            color = UIData.colors['hit']
-        else:
-            token = self._miss_token
-            color = UIData.colors['miss']
-
-        self._win.addstr(
-            self._scale_y(coord[0]), self._scale_x(coord[1]), token, color
-        )
-
-
     def _draw_ship(self, ship, color):
         """
         draws a ship onto the map.
@@ -209,6 +196,20 @@ class PlayerMap(BattleMap):
         super().__init__(Window._margin + 1)
 
 
+    def display_shot(self, coords, is_hit):
+        """
+        if the shot is a miss, draws a new token @ the coordinates of the shot.
+        if the token is a hit, colors the ship as an indication.
+        :param coord: coordinate of the shot
+        :param is_hit: whether the shot is a hit
+        """
+        y, x = self._scale_y(coords[0]), self._scale_x(coords[1])
+        if is_hit:
+            self._win.chgat(y, x, 1, UIData.colors['hit'])
+        else:
+            self._win.addstr(y, x, self._miss_token, UIData.colors['miss'])
+
+
 
 class OpponentMap(BattleMap):
     """
@@ -224,6 +225,24 @@ class OpponentMap(BattleMap):
         :param ship: the destroyed ship of the opponent
         """
         self._draw_ship(ship, UIData.colors['hit'])
+
+
+    def display_shot(self, coord, is_hit):
+        """
+        draws a new token on the coordinates of the shot.
+        :param coord: coordinate of the shot
+        :param is_hit: whether the shot is a hit
+        """
+        if is_hit:
+            token = self._hit_token
+            color = UIData.colors['hit']
+        else:
+            token = self._miss_token
+            color = UIData.colors['miss']
+
+        self._win.addstr(
+            self._scale_y(coord[0]), self._scale_x(coord[1]), token, color
+        )
 
 
 
