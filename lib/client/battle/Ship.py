@@ -24,14 +24,21 @@ class Ship(object):
         cls._map_size = map_size
 
 
-    def __init__(self, size):
+    def __init__(self, size, coords=None):
         """
-        initialize a ship object.
+        initialize a ship object. if coords are given, the ship will be
+        initialized with these coordinates. otherwise, it will be centered
+        and aligned horizontally.
         :param size: the length of the ship
+        :param coords: coordinates of the ship
         """
-        center = self._map_size//2
-        self.coords = [[center, center - size//2 + i] for i in range(size)]
-        self.alignment = 'hor'
+        if coords:
+            self.alignment = 'hor' if coords[0][0] == coords[1][0] else 'vert'
+            self.coords = coords
+        else:   #default position: centered, horizontal
+            center = self._map_size//2
+            self.coords = [[center, center - size//2 + i] for i in range(size)]
+            self.alignment = 'hor'
         self.size = size
         self._rotation_axis = size//2
 

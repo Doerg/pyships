@@ -24,11 +24,22 @@ def run_client(stdscr):
         TitleScreen.uninit()
 
         BattleScreen.init(player_name)
+
+        BattleScreen.reveal_ship(((4, 5), (4, 6), (4, 7), (4, 8)))   #remove me
+        BattleScreen._opponent_map.display_shot((3,4), False)    #remove me
+        BattleScreen._opponent_map.display_shot((5,14), False)   #remove me
+        BattleScreen._opponent_map.display_shot((6,14), False)   #remove me
+        BattleScreen._opponent_map.display_shot((10,17), True)   #remove me
+        BattleScreen._opponent_map.display_shot((10,18), True)   #remove me
+        BattleScreen._opponent_map.update()  #remove me
+
         ship_placements = BattleScreen.player_ship_placements()
+
         BattleScreen._key_legend.set_battle_keys()  #remove me
         BattleScreen._key_legend.update()           #remove me
         BattleScreen._message_bar.put_message("That's it so far!!!") #remove me
         BattleScreen._message_bar._win.getch()      #remove me
+
     except ProgramExit:
         return
 

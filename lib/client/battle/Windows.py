@@ -219,6 +219,10 @@ class OpponentMap(BattleMap):
 
 
     def reveal_ship(self, ship):
+        """
+        draws a destroyed ship on the opponent's map.
+        :param ship: the destroyed ship of the opponent
+        """
         self._draw_ship(ship, UIData.colors['hit'])
 
 
