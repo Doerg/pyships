@@ -34,12 +34,12 @@ def run_client(stdscr):
 
         ship_placements = BattleScreen.player_ship_placements()
 
+        BattleScreen.show_battle_keys()
+
         BattleScreen.show_shot((6,14), False)   #remove me
         BattleScreen.show_shot((10,17), True)   #remove me
         BattleScreen.show_shot((10,18), True)   #remove me
 
-        BattleScreen._key_legend.set_battle_keys()  #remove me
-        BattleScreen._key_legend.update()           #remove me
         BattleScreen._message_bar.put_message("That's it so far!!!") #remove me
         BattleScreen._message_bar._win.getch()      #remove me
 

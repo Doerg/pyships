@@ -90,13 +90,12 @@ def _position_ship(ship):
     return ship.coords  # server will only need coords
 
 
-def _message(msg):
+def show_battle_keys():
     """
-    writes the message to the message bar and displays it.
-    :param msg: the message to display
+    replaces the ship placement key legend with the battle mode key legend.
     """
-    _message_bar.put_message(msg)
-    _message_bar.update()
+    _key_legend.set_battle_keys()
+    _key_legend.update()
 
 
 def reveal_ship(coords):
@@ -120,3 +119,12 @@ def show_shot(coords, is_hit, opponent=False):
     map_to_update = _opponent_map if opponent else _player_map
     map_to_update.display_shot(coords, is_hit)
     map_to_update.update()
+
+
+def _message(msg):
+    """
+    writes the message to the message bar and displays it.
+    :param msg: the message to display
+    """
+    _message_bar.put_message(msg)
+    _message_bar.update()
