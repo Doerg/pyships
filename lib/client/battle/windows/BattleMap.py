@@ -16,7 +16,6 @@ class BattleMap(Window):
     _box_height = _ui_data['box']['height']
     _box_width = _ui_data['box']['width']
     _water_tokens = UIData.tokens['ocean']
-    _hit_token = UIData.tokens['hit']
     _miss_token = UIData.tokens['miss']
 
     def __init__(self, offset_x):
@@ -31,37 +30,18 @@ class BattleMap(Window):
             legend_height + Window._margin + 1, offset_x
         )
 
-        self._ships = []
-
         self._win.bkgd(' ', UIData.colors['battle frame'])
         self._win.bkgdset(' ', UIData.colors['ocean'])
-        self.draw_map()
+        self._draw_ocean()
 
 
-    def add_ship(self, ship):
+    def _draw_ocean(self):
         """
-        add a ship in order for it to be displayed on this battleground.
-        :param ship: the ship to be added
-        """
-        self._ships.append(ship)
-
-
-    def draw_map(self, new_ship=None):
-        """
-        draws the battleground with all ships on it.
-        :param new_ship: an extra ship to display for this one drawing
+        draws the ocean of the battleground.
         """
         for row in range(1, self._height+1):
             for col in range(1, self._width+1):
                 self._win.addstr(row, col, self._water_tokens[(row+col) % 2])
-        for ship in self._ships:
-            self._draw_ship(ship, UIData.colors['ship'])
-        if new_ship:
-            if new_ship.blocked():
-                color = UIData.colors['blocked ship']
-            else:
-                color = UIData.colors['placeable ship']
-            self._draw_ship(new_ship, color)
 
 
     def _draw_ship(self, ship, color):
@@ -115,6 +95,34 @@ class PlayerMap(BattleMap):
     def __init__(self):
         super().__init__(Window._margin + 1)
 
+        self._ships = []
+
+
+    def add_ship(self, ship):
+        """
+        add a ship in order for it to be displayed on this battleground.
+        :param ship: the ship to be added
+        """
+        self._ships.append(ship)
+
+
+    def draw_ship_placements(self, new_ship=None):
+        """
+        draws the ocean of the battleground and all ships on it. might draw
+        an extra ship in the context of the player's ship placement phase.
+        :param new_ship: an extra ship to display for this one drawing
+        """
+        self._draw_ocean()
+
+        for ship in self._ships:
+            self._draw_ship(ship, UIData.colors['ship'])
+        if new_ship:
+            if new_ship.blocked():
+                color = UIData.colors['blocked ship']
+            else:
+                color = UIData.colors['placeable ship']
+            self._draw_ship(new_ship, color)
+
 
     def display_shot(self, coords, is_hit):
         """
@@ -135,16 +143,18 @@ class OpponentMap(BattleMap):
     """
     the opponent's map.
     """
+    _hit_token = UIData.tokens['hit']
+    _directions = {
+        key_name: code for key_name, code in UIData.key_codes.items()
+        if key_name in ('up', 'down', 'left', 'right')
+    }
+
     def __init__(self):
         super().__init__(self._box_width + 3*Window._margin + 2)
 
         center = BattleMap._logical_size // 2
         self._selection_coords = [center, center]   #logical coordinates
         self._saved_coords = (self._scale_y(center), self._scale_x(center))
-        self._directions = {
-            key_name: code for key_name, code in UIData.key_codes.items()
-            if key_name in ('up', 'down', 'left', 'right')
-        }
 
 
     def set_cursor(self):
@@ -158,7 +168,7 @@ class OpponentMap(BattleMap):
 
     def move_cursor(self, direction):
         """
-        move the cursor in the given direction, if possible.
+        moves the cursor in the given direction, if possible.
         :param direction: the direction in which to move the cursor
         """
         if direction == self._directions['up']:

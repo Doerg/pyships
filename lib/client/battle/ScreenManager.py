@@ -42,7 +42,7 @@ def player_ship_placements():
     ships = (5, 4, 4, 3, 3, 3, 2, 2, 2, 2)
     coords = [_position_ship(Ship(size)) for size in ships]
 
-    _player_map.draw_map()
+    _player_map.draw_ship_placements()
     _player_map.update()
 
     return coords
@@ -58,7 +58,7 @@ def _position_ship(ship):
     misplacement = False
 
     while True:
-        _player_map.draw_map(new_ship=ship)
+        _player_map.draw_ship_placements(new_ship=ship)
         _player_map.update()
 
         key = _player_map.get_key()
