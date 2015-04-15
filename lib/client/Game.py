@@ -33,8 +33,8 @@ def run_client(stdscr):
         BattleScreen.show_shot((10,18), True, opponent=True)   #remove me
 
         ship_placements = BattleScreen.player_ship_placements()
-
         BattleScreen.show_battle_keys()
+        shot_coordinates = BattleScreen.let_player_shoot()
 
         BattleScreen.show_shot((6,14), False)   #remove me
         BattleScreen.show_shot((10,17), True)   #remove me

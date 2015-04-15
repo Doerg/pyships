@@ -91,6 +91,7 @@ class BattleMap(Window):
     one of PlayerMap or OpponentMap instead.
     """
     _ui_data = UIData.battle['map']
+    _logical_size = _ui_data['logical size']
     _height = _ui_data['height']
     _width = _ui_data['width']
     _box_height = _ui_data['box']['height']
@@ -217,6 +218,60 @@ class OpponentMap(BattleMap):
     """
     def __init__(self):
         super().__init__(self._box_width + 3*Window._margin + 2)
+
+        center = BattleMap._logical_size // 2
+        self._selection_coords = [center, center]   #logical coordinates
+        self._saved_coords = (self._scale_y(center), self._scale_x(center))
+        self._directions = {
+            key_name: code for key_name, code in UIData.key_codes.items()
+            if key_name in ('up', 'down', 'left', 'right')
+        }
+
+
+    def set_cursor(self):
+        """
+        moves the cursor to the coordinates of the last shot and makes the
+        cursor visible.
+        """
+        self._win.move(*self._saved_coords)
+        curses.curs_set(True)
+
+
+    def move_cursor(self, direction):
+        """
+        move the cursor in the given direction, if possible.
+        :param direction: the direction in which to move the cursor
+        """
+        if direction == self._directions['up']:
+            if self._selection_coords[0] > 0:
+                self._selection_coords[0] -= 1
+        elif direction == self._directions['down']:
+            if self._selection_coords[0] < self._logical_size-1:
+                self._selection_coords[0] += 1
+        elif direction == self._directions['left']:
+            if self._selection_coords[1] > 0:
+                self._selection_coords[1] -= 1
+        elif direction == self._directions['right']:
+            if self._selection_coords[1] < self._logical_size-1:
+                self._selection_coords[1] += 1
+
+        self._win.move(
+            self._scale_y(self._selection_coords[0]),
+            self._scale_x(self._selection_coords[1])
+        )
+
+
+    def get_shot_coordinates(self):
+        """
+        returns the logical map coordinates, calculated from the current
+        cursor position. also undisplays the cursor.
+        :return: the logical coordinates of the shot
+        """
+        y, x = self._win.getyx()
+        self._saved_cursor_coords = (y, x)
+        curses.curs_set(False)
+
+        return ((y - 1) // 2, (x - 1) // 2)
 
 
     def reveal_ship(self, ship):

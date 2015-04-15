@@ -121,6 +121,26 @@ def show_shot(coords, is_hit, opponent=False):
     map_to_update.update()
 
 
+def let_player_shoot():
+    """
+    lets the player select a coordinate on the opponent's map and shoot.
+    :return: the (logical) coordinates of the shot
+    """
+    keys = UIData.key_codes
+
+    _opponent_map.set_cursor()
+
+    while True:
+        key = _opponent_map.get_key()
+
+        if key == keys['exit']:
+            raise ProgramExit
+        if key in (keys['up'], keys['down'], keys['left'], keys['right']):
+            _opponent_map.move_cursor(key)
+        elif key == keys['fire']:
+            return _opponent_map.get_shot_coordinates()
+
+
 def _message(msg):
     """
     writes the message to the message bar and displays it.
