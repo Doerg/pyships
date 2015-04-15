@@ -1,4 +1,4 @@
-from .Panels import *
+from .panels import *
 
 
 def init():

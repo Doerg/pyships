@@ -1,6 +1,6 @@
 import curses
-from . import UIData, TitleScreen, BattleScreen
 from CustomExceptions import ProgramExit
+from . import UIData, TitleScreen, BattleScreen
 
 
 def run():
