@@ -154,7 +154,12 @@ class OpponentMap(BattleMap):
 
         center = BattleMap._logical_size // 2
         self._selection_coords = [center, center]   #logical coordinates
-        self._saved_coords = (self._scale_y(center), self._scale_x(center))
+        self._saved_cursor_coords = (
+            self._scale_y(center), self._scale_x(center)
+        )
+        self._shot_map = [
+            [False] * self._logical_size for _ in range(self._logical_size)
+        ]
 
 
     def set_cursor(self):
@@ -162,7 +167,7 @@ class OpponentMap(BattleMap):
         moves the cursor to the coordinates of the last shot and makes the
         cursor visible.
         """
-        self._win.move(*self._saved_coords)
+        self._win.move(*self._saved_cursor_coords)
         curses.curs_set(True)
 
 
@@ -190,17 +195,29 @@ class OpponentMap(BattleMap):
         )
 
 
-    def get_shot_coordinates(self):
+    def is_repeated_shot(self):
+        """
+        returns whether a shot at the current position has already been taken.
+        :return: True if shot has already been taken, False otherwise
+        """
+        y, x = self._selection_coords[0], self._selection_coords[1]
+        return self._shot_map[y][x]
+
+
+    def fire_shot(self):
         """
         returns the logical map coordinates, calculated from the current
         cursor position. also undisplays the cursor.
         :return: the logical coordinates of the shot
         """
-        y, x = self._win.getyx()
-        self._saved_cursor_coords = (y, x)
         curses.curs_set(False)
 
-        return ((y - 1) // 2, (x - 1) // 2)
+        y, x = self._win.getyx()
+        self._saved_cursor_coords = (y, x)
+        logical_y, logical_x = y-1, (x-1) // 2
+        self._shot_map[logical_y][logical_x] = True
+
+        return (logical_y, logical_x)
 
 
     def reveal_ship(self, ship):

@@ -138,7 +138,13 @@ def let_player_shoot():
         if key in (keys['up'], keys['down'], keys['left'], keys['right']):
             _opponent_map.move_cursor(key)
         elif key == keys['fire']:
-            return _opponent_map.get_shot_coordinates()
+            if _opponent_map.is_repeated_shot():
+                _message(
+                    "You already fired at this position. " +
+                    "Please choose another one."
+                )
+            else:
+                return _opponent_map.fire_shot()
 
 
 def _message(msg):
