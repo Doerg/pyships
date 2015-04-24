@@ -9,7 +9,7 @@ if c.establish(input('ip: ')):
     c.send_message(PlacementMessage(((1,2),(3,4),(5,6))))
 
     while True:
-        msg = c.server_message()
+        msg = c.get_message()
         if isinstance(msg, ExitMessage):
             print('Exit Message')
             break

@@ -1,32 +1,31 @@
-from queue import Queue
 from multiprocessing.connection import Client, Listener
-from netifaces import ifaddresses
-from Messages import *
+from queue import Queue
+from Messages import MessageListener
 
 
 class Connection(object):
-    _port = 12345
+    _server_port = 12346
+    _client_port = 12345
+
+    def __init__(self):
+        self._connection_listener = Listener(('', self._client_port))
+        self._msg_queue = Queue()
+
 
     def establish(self, server_ip):
-        machine_ip = ifaddresses('eth0')[2][0]['addr']
-
         try:
-            self._msg_sender = Client((server_ip, self._port))
-            self._msg_sender.send(GreetingsMessage('player xy', machine_ip))
+            self._msg_sender = Client((server_ip, self._server_port))
         except ConnectionRefusedError:
             return False
 
-        self._server_listener = Listener((machine_ip, self._port))
-        self._msg_queue = Queue()
-        self._msg_listener = MessageListener(
-            self._msg_queue, self._server_listener.accept()
-        )
+        server_connection = self._connection_listener.accept()
+        self._msg_listener = MessageListener(self._msg_queue, server_connection)
         self._msg_listener.start()
 
         return True
 
 
-    def server_message(self):
+    def get_message(self):
         msg = self._msg_queue.get()
         self._msg_queue.task_done()
         return msg
@@ -37,5 +36,5 @@ class Connection(object):
 
 
     def tear_down(self):
-        self._server_listener.close()
+        self._connection_listener.close()
         self._msg_listener.join()
