@@ -1,17 +1,24 @@
 #!/usr/bin/env python3.4
 
-import receiver
-from Message import *
+from ClientConnection import Connection
+from Messages import *
 
-receiver.establish()
+c = Connection()
 
-for _ in range(4):
-    msg = receiver.next_message()
-    if isinstance(msg, ExitMessage):
-        print('Exit Message')
-    elif isinstance(msg, ResultMessage):
-        print('Result Message: ', msg.result)
-    elif isinstance(msg, PlacementMessage):
-        print('Placement Message: ', msg.coords)
+if c.establish(input('ip: ')):
+    c.send_message(PlacementMessage(((1,2),(3,4),(5,6))))
 
-receiver.tear_down()
+    while True:
+        msg = c.server_message()
+        if isinstance(msg, ExitMessage):
+            print('Exit Message')
+            break
+        elif isinstance(msg, ResultMessage):
+            print('Result Message: ', msg.result)
+        elif isinstance(msg, PlacementMessage):
+            print('Placement Message: ', msg.coords)
+
+    c.send_message(ExitMessage())
+    c.tear_down()
+else:
+    print('Could not establish connection!')
