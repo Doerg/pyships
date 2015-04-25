@@ -81,7 +81,8 @@ class IpPrompt(LogonPrompt):
 
 class ExitPrompt(Panel):
     """
-    panel asking whether user wants to exit the program.
+    panel asking whether the user wants to retry connecting to the server or
+    exit the program.
     """
     _ui_data = UIData.title['exit prompt']
     _text = _ui_data['text']
@@ -108,6 +109,7 @@ class ExitPrompt(Panel):
     def get_answer(self):
         """
         asks the user to press either 'y' or 'n'. doesn't accept other input.
+        :return: True for input 'Y/y', False for input 'N/n'
         """
         curses.noecho()
         curses.curs_set(False)
