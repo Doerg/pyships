@@ -28,19 +28,28 @@ class Connection(object):
         return True
 
 
-    def has_message(self):
-        return not self._msg_queue.empty()
-
-
     def setup_identification(self, player_name):
         self._send_message(NameMessage(player_name))
         answer = self._get_message()
-        self._player_id = answer.player_id
+        self.player_id = answer.player_id
         return answer.opponent_name
 
 
     def inform_exit(self):
-        self._send_message(ExitMessage(self._player_id))
+        self._send_message(ExitMessage(self.player_id))
+
+
+    def send_placements(self, ship_placements):
+        self._send_message(PlacementMessage(self.player_id, ship_placements))
+
+
+    def wait_for_opponent_placements(self):
+        msg = self._get_message()
+        return True if isinstance(msg, PlacementMessage) else False
+
+
+    def has_message(self):
+        return not self._msg_queue.empty()
 
 
     def _get_message(self):

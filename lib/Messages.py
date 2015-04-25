@@ -7,7 +7,7 @@ class NameMessage(object):
 
 
 class IDMessage(object):
-    def __init__(self, opponent_name, player_id):
+    def __init__(self, player_id, opponent_name):
         self.opponent_name = opponent_name
         self.player_id = player_id
 
@@ -23,7 +23,9 @@ class ResultMessage(object):
 
 
 class PlacementMessage(object):
-    def __init__(self, coords):
+    #empty parameters as indication by server that opponent finished placement
+    def __init__(self, player_id=None, coords=None):
+        self.player_id = player_id
         self.coords = coords
 
 

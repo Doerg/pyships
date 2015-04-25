@@ -21,7 +21,12 @@ def run():
 
     sleep(3)
     print('Player name: %s' % msg_queue.get().player_name)
-    msg_sender.send(IDMessage('MyEnemyXXX', player_id=0))
+    msg_sender.send(IDMessage(0, 'MyEnemyXXX'))
+
+    print('Player ship placements: %s' % msg_queue.get().coords)
+    sleep(3)
+    msg_sender.send(PlacementMessage())
+    #msg_sender.send(ExitMessage(1))
 
     while True:
         msg = msg_queue.get()

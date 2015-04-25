@@ -155,6 +155,16 @@ def let_player_shoot():
                 return _opponent_map.fire_shot()
 
 
+def handle_exit(msg):
+    """
+    displays the message and returns once the player pressed exit.
+    :param msg: the message to display
+    """
+    message(msg + " Please press 'Q' to exit.")
+    while _message_bar.get_key() != UIData.key_codes['exit']:
+        pass
+
+
 def message(msg):
     """
     writes the message to the message bar and displays it.
