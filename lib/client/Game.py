@@ -27,15 +27,20 @@ def run_client(stdscr):
 
     TitleScreen.uninit()
     BattleScreen.init(player_name)
-    opponent_identification(player_name, connection)
+
+    if not connection.has_message():
+        BattleScreen.message('Waiting for an opponent to connect...')
+    opponent_name = connection.setup_identification(player_name)
+    BattleScreen.introduce_opponent(opponent_name)
 
     try:
         ship_placements = BattleScreen.player_ship_placements()
         BattleScreen.show_battle_keys()
         shot_coordinates = BattleScreen.let_player_shoot()
     except ProgramExit:
-        connection.inform_exit()
         return
+    finally:
+        connection.inform_exit()
 
 
 def establish_connection():
@@ -52,10 +57,3 @@ def establish_connection():
         else:
             if not TitleScreen.ask_connection_retry():
                 raise ProgramExit
-
-
-def opponent_identification(player_name, connection):
-    if not connection.has_message():
-        BattleScreen.message('Waiting for an opponent to connect...')
-    opponent_name = connection.setup_identification(player_name)
-    BattleScreen.introduce_opponent(opponent_name)

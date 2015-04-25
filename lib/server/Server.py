@@ -1,6 +1,7 @@
 from multiprocessing.connection import Client, Listener
 from queue import Queue
 from Messages import *
+from time import sleep
 
 
 def run():
@@ -18,6 +19,7 @@ def run():
     msg_sender = Client((client_ip, client_port))
     connection_listener.close()
 
+    sleep(3)
     print('Player name: %s' % msg_queue.get().player_name)
     msg_sender.send(IDMessage('MyEnemyXXX', player_id=0))
 

@@ -36,9 +36,27 @@ class ContentFrame(Window):
             Window._margin + map_box_width//2 - len(player_name)//2,
             player_name, UIData.colors['player name']
         )
+        self.set_opponent_name('Opponent')
+
+
+    def set_opponent_name(self, opponent_name):
+        """
+        sets a new opponent name above the opponent's map.
+        :param opponent_name: the name of the opponent
+        """
+        legend_height = UIData.battle['info bar']['height']
+        map_box_width = UIData.battle['map']['box']['width']
+        clear_string = ' ' * UIData.title['logon prompt']['input limit']
+
+        name_position_center = (1 + 3*Window._margin + map_box_width +
+                                map_box_width//2)
+        self._win.addstr(   #clear out any previous name string
+            legend_height + Window._margin,
+            name_position_center - len(clear_string)//2,
+            clear_string
+        )
         self._win.addstr(
             legend_height + Window._margin,
-            1 + 3*Window._margin + map_box_width +
-            map_box_width//2 - len('Opponent')//2,
-            'Opponent', UIData.colors['opponent name']
+            name_position_center - len(opponent_name)//2,
+            opponent_name, UIData.colors['opponent name']
         )

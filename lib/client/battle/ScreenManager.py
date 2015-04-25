@@ -9,8 +9,7 @@ def init(player_name):
     initializes all the windows of the battle screen and displays them.
     :param player_name: the name of the player
     """
-    global _content_frame, _key_legend, _message_bar
-    global _player_map, _opponent_map, _player_name
+    global _content_frame, _key_legend, _message_bar, _player_map, _opponent_map
 
     _content_frame = ContentFrame(player_name)
     _key_legend = KeyLegend()
@@ -31,7 +30,8 @@ def introduce_opponent(opponent_name):
     message bar.
     :param opponent_name: the name of the player's opponent
     """
-    #_content_frame.set_opponent_name(opponent_name)
+    _content_frame.set_opponent_name(opponent_name)
+    _content_frame.update()
     message("Your opponent is '%s'! Please place your ships." % opponent_name)
 
 
