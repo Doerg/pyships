@@ -29,7 +29,7 @@ def ask_logon_data():
     return _name_prompt.get_input(), _ip_prompt.get_input()
 
 
-def ask_exit():
+def ask_connection_retry():
     """
     asks the user if he wants to exit the program.
     :return: True if user wants to exit, False otherwise

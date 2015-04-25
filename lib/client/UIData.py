@@ -53,7 +53,7 @@ title = {
         'gap': 6
     },
     'exit prompt': {
-        'text': 'Connection could not be established! Exit? (y/n):',
+        'text': 'Connection could not be established! Try again? (y/n):',
         'hpadding': 3,
         'vpadding': 1,
         'relative vertical location': 0.75,

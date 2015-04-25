@@ -62,8 +62,8 @@ def establish_connection():
 
     while True:
         player_name, host_ip = TitleScreen.ask_logon_data()
-        if not connection.establish(host_ip):
-            if TitleScreen.ask_exit():
-                raise ProgramExit
-        else:
+        if connection.establish(host_ip):
             return connection, player_name
+        else:
+            if not TitleScreen.ask_connection_retry():
+                raise ProgramExit

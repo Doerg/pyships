@@ -46,6 +46,9 @@ class LogonPrompt(Panel):
         curses.echo()
         curses.curs_set(True)
         user_input = self._win.getstr(1, self._input_offset, self._input_limit)
+        curses.curs_set(False)
+        curses.noecho()
+
         return user_input.rstrip()
 
 
