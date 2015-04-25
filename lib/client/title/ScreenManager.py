@@ -31,8 +31,8 @@ def ask_logon_data():
 
 def ask_connection_retry():
     """
-    asks the user if he wants to exit the program.
-    :return: True if user wants to exit, False otherwise
+    asks the user if he wants to retry connecting to the server.
+    :return: True if user wants to retry, False otherwise
     """
     _name_prompt.hide()
     _ip_prompt.hide()
