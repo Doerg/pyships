@@ -1,5 +1,7 @@
 import curses
+from .Connection import Connection
 from CustomExceptions import ProgramExit
+from Messages import *
 from . import UIData, TitleScreen, BattleScreen
 
 
@@ -16,15 +18,18 @@ def run_client(stdscr):
     top level game logic.
     :param stdscr: curses default window, passed by wrapper method
     """
+    UIData.init_colors()
+    TitleScreen.init()
+
     try:
-        UIData.init_colors()
-
-        TitleScreen.init()
         connection, player_name = establish_connection()
-        TitleScreen.uninit()
+    except ProgramExit:
+        return
 
-        BattleScreen.init(player_name)
+    TitleScreen.uninit()
+    BattleScreen.init(player_name)
 
+    try:
         BattleScreen.reveal_ship(((4, 5), (4, 6), (4, 7), (4, 8)))   #remove me
         BattleScreen.show_shot((3,4), False, opponent=True)    #remove me
         BattleScreen.show_shot((5,14), False, opponent=True)   #remove me
@@ -44,6 +49,7 @@ def run_client(stdscr):
         BattleScreen._message_bar._win.getch()      #remove me
 
     except ProgramExit:
+        connection.send_message(ExitMessage())
         return
 
 
@@ -52,10 +58,11 @@ def establish_connection():
     sets up a connection, requiring user input from the title screen.
     :return: connection object of some sort
     """
+    connection = Connection()
+
     while True:
         player_name, host_ip = TitleScreen.ask_logon_data()
-        connection = True #some_method(player_name, host_ip)
-        if not connection:
+        if not connection.establish(host_ip):
             if TitleScreen.ask_exit():
                 raise ProgramExit
         else:

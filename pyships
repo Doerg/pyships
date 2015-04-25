@@ -17,8 +17,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(filename)s:%(funcName)s:%(message)s")
 
     if args.server:
-        #from Server import Server or something
-        print("Server not implemented yet!")
+        from server import Server
+        Server.run()
     else:
         from client import Game
         Game.run()

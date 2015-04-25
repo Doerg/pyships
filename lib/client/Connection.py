@@ -1,46 +1,59 @@
-import socket
-import logging
+from multiprocessing.connection import Client, Listener
+from queue import Queue
+from Messages import MessageListener
+import signal
 
 
-class Connection:
-    def __init__(self, host, port):
-        logging.debug('init socket with %s:%i', host, port)
-        self.host = host
-        self.port = port
-        self.connected = False
-        self.socket = None
+class Connection(object):
+    _server_port = 12346
+    _client_port = 12345
 
-    def establish(self):
-        if self.connected:
-            logging.warning('Already connected!')
-            return
+    def __init__(self):
+        self._connection_listener = Listener(('', self._client_port))
+        self._msg_queue = Queue()
 
+
+    def establish(self, server_ip):
         try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.connect((self.host, self.port))
-        except socket.error as msg:
-            logging.error(msg)
-            self.socket = None
-        else:
-            self.connected = True
+            with Connection.Timeout():
+                self._msg_sender = Client((server_ip, self._server_port))
+        except Exception: #general Exception b/c different things can go wrong
+            return False
 
-    def listen(self):
-        while True:
-            msg = self.socket.recv(1024)
+        server_connection = self._connection_listener.accept()
+        self._connection_listener.close()
+        self._msg_listener = MessageListener(self._msg_queue, server_connection)
+        self._msg_listener.start()
 
-    def disconnect(self):
-        if self.socket:
-            self.socket.close()
+        return True
 
-        self.connected = False
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(filename)s:%(funcName)s:%(message)s")
+    def get_message(self):
+        msg = self._msg_queue.get()
+        self._msg_queue.task_done()
+        return msg
 
-    conn = Connection('127.0.0.1', 12345)
-    try:
-        conn.establish()
-    except KeyboardInterrupt:
-        conn.disconnect()
 
-    conn.disconnect()
+    def send_message(self, msg):
+        self._msg_sender.send(msg)
+
+
+
+    class Timeout:
+        def __init__(self, seconds=1, error_message='Timeout'):
+            self._seconds = seconds
+            self._error_message = error_message
+
+        def _handle_timeout(self, signum, frame):
+            raise Connection.TimeoutError(self._error_message)
+
+        def __enter__(self):
+            signal.signal(signal.SIGALRM, self._handle_timeout)
+            signal.alarm(self._seconds)
+
+        def __exit__(self, type, value, traceback):
+            signal.alarm(0)
+
+
+    class TimeoutError(Exception):
+        pass
