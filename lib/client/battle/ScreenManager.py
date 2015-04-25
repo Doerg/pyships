@@ -25,13 +25,21 @@ def init(player_name):
     _message_bar.update()
 
 
+def introduce_opponent(opponent_name):
+    """
+    writes the opponent's name on top of his map and introduces him in the
+    message bar.
+    :param opponent_name: the name of the player's opponent
+    """
+    #_content_frame.set_opponent_name(opponent_name)
+    message("Your opponent is '%s'! Please place your ships." % opponent_name)
+
+
 def player_ship_placements():
     """
     lets the player position his ships.
     :return: the coordinates of all placed ships
     """
-    _message('Welcome to pyships! Please place your ships.')
-
     map_size = UIData.battle['map']['logical size']
     the_map = [
         [False for _col in range(map_size)] for _row in range(map_size)
@@ -74,7 +82,7 @@ def _position_ship(ship):
 
         elif key == keys['place ship']:
             if ship.blocked():
-                _message(
+                message(
                     'You have already placed a ship at this location. ' +
                     'Please choose another one.'
                 )
@@ -83,7 +91,7 @@ def _position_ship(ship):
                 ship.place_on_map()
                 _player_map.add_ship(ship)
                 if misplacement:
-                    _message('Please place your next ship.')
+                    message('Please place your next ship.')
                     misplacement = False
                 break
 
@@ -139,7 +147,7 @@ def let_player_shoot():
             _opponent_map.move_cursor(key)
         elif key == keys['fire']:
             if _opponent_map.is_repeated_shot():
-                _message(
+                message(
                     "You already fired at this position. " +
                     "Please choose another one."
                 )
@@ -147,7 +155,7 @@ def let_player_shoot():
                 return _opponent_map.fire_shot()
 
 
-def _message(msg):
+def message(msg):
     """
     writes the message to the message bar and displays it.
     :param msg: the message to display

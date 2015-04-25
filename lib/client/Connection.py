@@ -1,6 +1,6 @@
 from multiprocessing.connection import Client, Listener
 from queue import Queue
-from Messages import MessageListener
+from Messages import *
 import signal
 
 
@@ -28,13 +28,28 @@ class Connection(object):
         return True
 
 
-    def get_message(self):
+    def has_message(self):
+        return not self._msg_queue.empty()
+
+
+    def setup_identification(self, player_name):
+        self._send_message(NameMessage(player_name))
+        answer = self._get_message()
+        self._player_id = answer.player_id
+        return answer.opponent_name
+
+
+    def inform_exit(self):
+        self._send_message(ExitMessage(self._player_id))
+
+
+    def _get_message(self):
         msg = self._msg_queue.get()
         self._msg_queue.task_done()
         return msg
 
 
-    def send_message(self, msg):
+    def _send_message(self, msg):
         self._msg_sender.send(msg)
 
 

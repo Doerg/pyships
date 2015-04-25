@@ -18,6 +18,9 @@ def run():
     msg_sender = Client((client_ip, client_port))
     connection_listener.close()
 
+    print('Player name: %s' % msg_queue.get().player_name)
+    msg_sender.send(IDMessage('MyEnemyXXX', player_id=0))
+
     while True:
         msg = msg_queue.get()
         if isinstance(msg, ExitMessage):

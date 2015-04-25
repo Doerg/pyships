@@ -1,17 +1,26 @@
 from threading import Thread
 
 
-class GreetingsMessage(object):
-    def __init__(self, player_name, ip):
+class NameMessage(object):
+    def __init__(self, player_name):
         self.player_name = player_name
-        self.ip = ip
+
+
+class IDMessage(object):
+    def __init__(self, opponent_name, player_id):
+        self.opponent_name = opponent_name
+        self.player_id = player_id
+
+
+class ExitMessage(object):
+    def __init__(self, player_id):
+        self.player_id = player_id
+
 
 class ResultMessage(object):
     def __init__(self, result):
         self.result = result
 
-class ExitMessage(object):
-    pass
 
 class PlacementMessage(object):
     def __init__(self, coords):

@@ -1,7 +1,6 @@
 import curses
 from .Connection import Connection
 from CustomExceptions import ProgramExit
-from Messages import *
 from . import UIData, TitleScreen, BattleScreen
 
 
@@ -28,35 +27,21 @@ def run_client(stdscr):
 
     TitleScreen.uninit()
     BattleScreen.init(player_name)
+    opponent_identification(player_name, connection)
 
     try:
-        BattleScreen.reveal_ship(((4, 5), (4, 6), (4, 7), (4, 8)))   #remove me
-        BattleScreen.show_shot((3,4), False, opponent=True)    #remove me
-        BattleScreen.show_shot((5,14), False, opponent=True)   #remove me
-        BattleScreen.show_shot((6,14), False, opponent=True)   #remove me
-        BattleScreen.show_shot((10,17), True, opponent=True)   #remove me
-        BattleScreen.show_shot((10,18), True, opponent=True)   #remove me
-
         ship_placements = BattleScreen.player_ship_placements()
         BattleScreen.show_battle_keys()
         shot_coordinates = BattleScreen.let_player_shoot()
-
-        BattleScreen.show_shot((6,14), False)   #remove me
-        BattleScreen.show_shot((10,17), True)   #remove me
-        BattleScreen.show_shot((10,18), True)   #remove me
-
-        BattleScreen._message_bar.put_message("That's it so far!!!") #remove me
-        BattleScreen._message_bar._win.getch()      #remove me
-
     except ProgramExit:
-        connection.send_message(ExitMessage())
+        connection.inform_exit()
         return
 
 
 def establish_connection():
     """
     sets up a connection, requiring user input from the title screen.
-    :return: connection object of some sort
+    :return: connection object
     """
     connection = Connection()
 
@@ -67,3 +52,10 @@ def establish_connection():
         else:
             if not TitleScreen.ask_connection_retry():
                 raise ProgramExit
+
+
+def opponent_identification(player_name, connection):
+    if not connection.has_message():
+        BattleScreen.message('Waiting for an opponent to connect...')
+    opponent_name = connection.setup_identification(player_name)
+    BattleScreen.introduce_opponent(opponent_name)
