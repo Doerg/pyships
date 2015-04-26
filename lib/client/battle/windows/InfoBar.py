@@ -120,6 +120,8 @@ class MessageBar(InfoBar):
         writes the given message into the message bar.
         :param message: the message to write
         """
+        curses.curs_set(False)
+
         self._clear()
         self._win.addnstr(
             self._text_line, InfoBar._padding, message, InfoBar._content_width

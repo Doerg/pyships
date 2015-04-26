@@ -189,10 +189,10 @@ class OpponentMap(BattleMap):
             if self._selection_coords[1] < self._logical_size-1:
                 self._selection_coords[1] += 1
 
-        self._win.move(
-            self._scale_y(self._selection_coords[0]),
-            self._scale_x(self._selection_coords[1])
-        )
+        cursor_y = self._scale_y(self._selection_coords[0])
+        cursor_x = self._scale_x(self._selection_coords[1])
+        self._win.move(cursor_y, cursor_x)
+        self._saved_cursor_coords = (cursor_y, cursor_x)
 
 
     def is_repeated_shot(self):
@@ -200,7 +200,7 @@ class OpponentMap(BattleMap):
         returns whether a shot at the current position has already been taken.
         :return: True if shot has already been taken, False otherwise
         """
-        y, x = self._selection_coords[0], self._selection_coords[1]
+        y, x = self._selection_coords
         return self._shot_map[y][x]
 
 
@@ -212,9 +212,7 @@ class OpponentMap(BattleMap):
         """
         curses.curs_set(False)
 
-        y, x = self._win.getyx()
-        self._saved_cursor_coords = (y, x)
-        logical_y, logical_x = y-1, (x-1) // 2
+        logical_y, logical_x = self._selection_coords
         self._shot_map[logical_y][logical_x] = True
 
         return [logical_y, logical_x]

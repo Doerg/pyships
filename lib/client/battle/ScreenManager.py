@@ -151,6 +151,7 @@ def let_player_shoot():
                     "You already fired at this position. " +
                     "Please choose another one."
                 )
+                _opponent_map.set_cursor() #b/c cursor moved to message bar
             else:
                 return _opponent_map.fire_shot()
 
