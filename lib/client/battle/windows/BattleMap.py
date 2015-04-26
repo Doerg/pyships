@@ -217,7 +217,7 @@ class OpponentMap(BattleMap):
         logical_y, logical_x = y-1, (x-1) // 2
         self._shot_map[logical_y][logical_x] = True
 
-        return (logical_y, logical_x)
+        return [logical_y, logical_x]
 
 
     def reveal_ship(self, ship):

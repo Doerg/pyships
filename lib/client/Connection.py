@@ -1,6 +1,7 @@
 from multiprocessing.connection import Client, Listener
 from queue import Queue
 from Messages import *
+from CustomExceptions import *
 import signal
 
 
@@ -43,9 +44,19 @@ class Connection(object):
         self._send_message(PlacementMessage(self.player_id, ship_placements))
 
 
-    def wait_for_opponent_placements(self):
-        msg = self._get_message()
-        return True if isinstance(msg, PlacementMessage) else False
+    def acknowledge_opponent_placements(self):
+        self._get_message()
+
+
+    def deliver_shot(self, shot_coords):
+        if self.has_message(): #can only be player exit or server shutdown here
+            self._get_message()
+        self._send_message(ShotMessage(self.player_id, shot_coords))
+        return self._get_message()
+
+
+    def receive_shot(self):
+        return self._get_message()
 
 
     def has_message(self):
@@ -55,12 +66,19 @@ class Connection(object):
     def _get_message(self):
         msg = self._msg_queue.get()
         self._msg_queue.task_done()
+        self._abortion_check(msg)
         return msg
+
+
+    def _abortion_check(self, message):
+        if isinstance(message, ExitMessage):
+            raise OpponentLeft
+        if isinstance(message, ShutdownMessage):
+            raise ServerShutdown
 
 
     def _send_message(self, msg):
         self._msg_sender.send(msg)
-
 
 
     class Timeout:
@@ -77,7 +95,3 @@ class Connection(object):
 
         def __exit__(self, type, value, traceback):
             signal.alarm(0)
-
-
-    class TimeoutError(Exception):
-        pass
