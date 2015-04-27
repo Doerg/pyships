@@ -10,22 +10,19 @@ class Connection(object):
     _client_port = 12345
 
     def __init__(self):
-        self._connection_listener = Listener(('', self._client_port))
         self._msg_queue = Queue()
 
 
     def establish(self, server_ip):
-        try:
-            with Connection.Timeout():
-                self._msg_sender = Client((server_ip, self._server_port))
-        except Exception: #general Exception b/c different things can go wrong
-            return False
+        with Listener(('', self._client_port)) as connection_listener:
+            try:
+                with Connection.Timeout():
+                    self._msg_sender = Client((server_ip, self._server_port))
+            except Exception: #general b/c different things can go wrong
+                return False
+            server_connection = connection_listener.accept()
 
-        server_connection = self._connection_listener.accept()
-        self._connection_listener.close()
-        self._msg_listener = MessageListener(self._msg_queue, server_connection)
-        self._msg_listener.start()
-
+        MessageListener(self._msg_queue, server_connection).start()
         return True
 
 
@@ -66,7 +63,7 @@ class Connection(object):
     def _get_message(self):
         msg = self._msg_queue.get()
         self._msg_queue.task_done()
-        self._abortion_check(msg)
+        self._abortion_check(msg) #each message might signal some sort of exit
         return msg
 
 
