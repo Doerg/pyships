@@ -10,18 +10,21 @@ class Connection(BaseConnection):
     """
     def __init__(self):
         super().__init__()
-        self._senders = []
+        self._msg_senders = []
 
 
     def establish(self):
-    	with Listener(('', self._server_port)) as connection_listener:
-    		for _ in range(2):
-    			client_connection = connection_listener.accept()
-    			self.MessageListener(self._msg_queue, client_connection).start()
-    			client_ip = connection_listener.last_accepted[0]
-    			self._senders.append(
-    				Client((client_ip, self._client_port))
-    			)
+        with Listener(('', self._server_port)) as connection_listener:
+            for _ in range(2):
+                client_connection = connection_listener.accept()
+                self.MessageListener(self._msg_queue, client_connection).start()
+                client_ip = connection_listener.last_accepted[0]
+                self._msg_senders.append(Client((client_ip, self._client_port)))
+
+
+    def inform_shutdown(self):
+        for sender in self._msg_senders:
+            sender.send(ShutdownMessage())
 
 
     class MessageListener(BaseConnection.MessageListener):

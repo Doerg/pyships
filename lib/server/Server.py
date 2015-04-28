@@ -14,7 +14,7 @@ def run():
 
 	try:
 		_handle_identification(game_info, connection)
-		_handle_ship_placement(game_info, connection)		
+		_handle_ship_placement(game_info, connection)
 		while True:
 			_handle_shot_exchange(game_info, connection)
 	except (GameOver, OpponentLeft):
@@ -35,23 +35,23 @@ def _handle_ship_placement(game_info, connection):
 
 def _handle_shot_exchange(game_info, connection):
 	for shooter_id in range(2):
-		shot_coords = connection.receive_shot()
-		receiver_id = _other_player(shooter_id)
+		receiver_id = _other_player_id(shooter_id)
 		fleet = game_info[receiver_id]['fleet']
 
-		#can be True, False or list
-		#list represents a destroyed ship, boolean a (non-)hit
-		shot_result = fleet.receive_shot(shot_coords) 
+		shot_coords = connection.receive_shot()
+
+		#can be True (hit), False (no hit) or a list (destroyed ship):
+		shot_result = fleet.receive_shot(shot_coords)
 
 		if isinstance(shot_result, list): #list = full ship coords
 			is_hit = True
 			ship_destroyed = True
-			coordinates = shot_result	
+			coordinates = shot_result
 			game_over = fleet.is_destroyed()
 		else:
 			is_hit = shot_result
 			ship_destroyed = False
-			coordinates = shot_coords	
+			coordinates = shot_coords
 			game_over = False
 
 		connection.inform_shot_result(
@@ -63,5 +63,5 @@ def _handle_shot_exchange(game_info, connection):
 			raise GameOver
 
 
-def _other_player(player_id):
+def _other_player_id(player_id):
 	return abs(player_id - 1)

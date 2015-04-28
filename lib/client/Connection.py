@@ -36,7 +36,7 @@ class Connection(BaseConnection):
         :param player_name: the name of the local player
         :return: the name of the opponent
         """
-        self._send_message(NameMessage(player_name))
+        self._msg_sender.send(NameMessage(player_name))
         answer = self._get_message()
         self.player_id = answer.player_id
         return answer.opponent_name
@@ -46,7 +46,7 @@ class Connection(BaseConnection):
         """
         informs the server that the local player terminated the program.
         """
-        self._send_message(ExitMessage(self.player_id))
+        self._msg_sender.send(ExitMessage(self.player_id))
 
 
     def send_placements(self, ship_placements):
@@ -54,7 +54,7 @@ class Connection(BaseConnection):
         sends the server the local player's ship placements.
         :param ship_placements: the local player's ship placements
         """
-        self._send_message(PlacementMessage(self.player_id, ship_placements))
+        self._msg_sender.send(PlacementMessage(self.player_id, ship_placements))
 
 
     def acknowledge_opponent_placements(self):
@@ -74,7 +74,7 @@ class Connection(BaseConnection):
         """
         if self.has_message(): #can only be player exit or server shutdown here
             self._get_message()
-        self._send_message(ShotMessage(self.player_id, shot_coords))
+        self._msg_sender.send(ShotMessage(self.player_id, shot_coords))
         return self._get_message()
 
 
@@ -97,14 +97,6 @@ class Connection(BaseConnection):
             raise OpponentLeft
         if isinstance(message, ShutdownMessage):
             raise ServerShutdown
-
-
-    def _send_message(self, message):
-        """
-        sends the given message out to the pyships server.
-        :param message: the message to be sent
-        """
-        self._msg_sender.send(message)
 
 
     class Timeout:

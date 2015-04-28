@@ -6,7 +6,7 @@ class BaseConnection(object):
     """
     common connection interface used by both the game client and the server.
     """
-    _server_port = 12346
+    _server_port = 12346    #ports for listeners
     _client_port = 12345
 
     def __init__(self):
