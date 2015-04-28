@@ -73,23 +73,3 @@ class PlacementMessage(object):
             self.player_id = player_id
         if coords != None:
             self.coords = coords
-
-
-
-class MessageListener(Thread):
-    """
-    daemon thread that puts all incoming messages into a message queue.
-    """
-    def __init__(self, msg_queue, connection):
-        Thread.__init__(self)
-        self.daemon = True  # causes thread to exit once main thread exits
-        self._msg_queue = msg_queue
-        self._connection = connection
-
-    def run(self):
-        while True:
-            msg = self._connection.recv()
-            self._msg_queue.put(msg)
-            if isinstance(msg, ExitMessage) or isinstance(msg, ShutdownMessage):
-                self._connection.close()
-                return

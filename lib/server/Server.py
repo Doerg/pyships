@@ -8,7 +8,7 @@ def run():
 	connection = Connection()
 	connection.establish()
 
-	at_exit.register(connection.inform_shutdown)
+	atexit.register(connection.inform_shutdown)
 
 	game_info = ({},{})	#one dict for each player
 
@@ -17,7 +17,7 @@ def run():
 		_handle_ship_placement(game_info, connection)		
 		while True:
 			_handle_shot_exchange(game_info, connection)
-	except GameOver, OpponentLeft:
+	except (GameOver, OpponentLeft):
 		return
 
 

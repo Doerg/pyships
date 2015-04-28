@@ -31,7 +31,7 @@ class Connection(object):
                 return False
             server_connection = connection_listener.accept()
 
-        MessageListener(self._msg_queue, server_connection).start()
+        self.MessageListener(self._msg_queue, server_connection).start()
         return True
 
 
@@ -152,3 +152,23 @@ class Connection(object):
 
         def __exit__(self, type, value, traceback):
             signal.alarm(0)
+
+
+    class MessageListener(Thread):
+        """
+        daemon thread that puts all incoming messages into a message queue.
+        """
+        def __init__(self, msg_queue, connection):
+            Thread.__init__(self)
+            self.daemon = True  #causes thread to exit once main thread exits
+            self._msg_queue = msg_queue
+            self._connection = connection
+
+        def run(self):
+            while True:
+                msg = self._connection.recv()
+                self._msg_queue.put(msg)
+                for msg_type in (ExitMessage, ShutdownMessage):
+                    if isinstance(msg, msg_type):
+                        self._connection.close()
+                        return
