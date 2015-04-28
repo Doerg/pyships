@@ -1,20 +1,14 @@
 from multiprocessing.connection import Client, Listener
-from queue import Queue
 from Messages import *
 from CustomExceptions import *
+from BaseConnection import BaseConnection
 import signal
 
 
-class Connection(object):
+class Connection(BaseConnection):
     """
     connection interface used by the game client.
     """
-    _server_port = 12346
-    _client_port = 12345
-
-    def __init__(self):
-        self._msg_queue = Queue()
-
 
     def establish(self, server_ip):
         """
@@ -92,26 +86,6 @@ class Connection(object):
         return self._get_message()
 
 
-    def has_message(self):
-        """
-        returns whether a message is available in the queue.
-        :return: True when message is available in the queue, False otherwise
-        """
-        return not self._msg_queue.empty()
-
-
-    def _get_message(self):
-        """
-        returns the oldest message in the message queue. blocks until a
-        message is available.
-        :return: the oldest message in the message queue
-        """
-        msg = self._msg_queue.get()
-        self._msg_queue.task_done()
-        self._abortion_check(msg) #each message might signal some sort of exit
-        return msg
-
-
     def _abortion_check(self, message):
         """
         checks whether the given message signals the exit of the remote player
@@ -154,21 +128,10 @@ class Connection(object):
             signal.alarm(0)
 
 
-    class MessageListener(Thread):
+    class MessageListener(BaseConnection.MessageListener):
         """
         daemon thread that puts all incoming messages into a message queue.
         """
         def __init__(self, msg_queue, connection):
-            Thread.__init__(self)
-            self.daemon = True  #causes thread to exit once main thread exits
-            self._msg_queue = msg_queue
-            self._connection = connection
-
-        def run(self):
-            while True:
-                msg = self._connection.recv()
-                self._msg_queue.put(msg)
-                for msg_type in (ExitMessage, ShutdownMessage):
-                    if isinstance(msg, msg_type):
-                        self._connection.close()
-                        return
+            super().__init__(msg_queue, connection)
+            self._termination_messages = (ExitMessage, ShutdownMessage)

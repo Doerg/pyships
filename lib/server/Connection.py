@@ -1,18 +1,15 @@
 from multiprocessing.connection import Client, Listener
-from queue import Queue
 from Messages import *
 from CustomExceptions import *
+from BaseConnection import BaseConnection
 
 
-class Connection(object):
+class Connection(BaseConnection):
     """
     connection interface used by the game client.
     """
-    _server_port = 12346
-    _client_port = 12345
-
     def __init__(self):
-        self._msg_queue = Queue()
+        super().__init__()
         self._senders = []
 
 
@@ -27,20 +24,10 @@ class Connection(object):
     			)
 
 
-    class MessageListener(Thread):
-        """
-        daemon thread that puts all incoming messages into a message queue.
-        """
-        def __init__(self, msg_queue, connection):
-            Thread.__init__(self)
-            self.daemon = True  # causes thread to exit once main thread exits
-            self._msg_queue = msg_queue
-            self._connection = connection
-
-        def run(self):
-            while True:
-                msg = self._connection.recv()
-                self._msg_queue.put(msg)
-                if isinstance(msg, ExitMessage):
-                    self._connection.close()
-                    return
+    class MessageListener(BaseConnection.MessageListener):
+	    """
+	    daemon thread that puts all incoming messages into a message queue.
+	    """
+	    def __init__(self, msg_queue, connection):
+	        super().__init__(msg_queue, connection)
+	        self._termination_messages = (ExitMessage,)
