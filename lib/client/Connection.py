@@ -39,7 +39,7 @@ class Connection(BaseConnection):
         self._msg_sender.send(NameMessage(player_name))
         answer = self._get_message()
         self.player_id = answer.player_id
-        return answer.opponent_name
+        return answer.opponent_name.decode("utf-8") #arrived as bytestring
 
 
     def inform_exit(self):
@@ -74,7 +74,7 @@ class Connection(BaseConnection):
         """
         if self.has_message(): #can only be player exit or server shutdown here
             self._get_message()
-        self._msg_sender.send(ShotMessage(self.player_id, shot_coords))
+        self._msg_sender.send(ShotMessage(shot_coords))
         return self._get_message()
 
 

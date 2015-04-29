@@ -14,8 +14,7 @@ class ShotMessage(object):
     """
     tells the server the coordinates of the shot taken by the local player.
     """
-    def __init__(self, player_id, coords):
-        self.player_id = player_id
+    def __init__(self, coords):
         self.coords = coords
 
 
