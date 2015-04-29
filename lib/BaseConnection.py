@@ -47,6 +47,7 @@ class BaseConnection(object):
             while True:
                 msg = self._connection.recv()
                 self._msg_queue.put(msg)
-                for msg_type in (self._termination_messages):
-                    self._connection.close()
-                    return
+                for termination_type in (self._termination_messages):
+                    if isinstance(msg, termination_type):
+                        self._connection.close()
+                        return

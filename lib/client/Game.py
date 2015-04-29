@@ -99,10 +99,9 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     connection.acknowledge_opponent_placements()
     message = '%s has finished ship placement. ' % opponent_name
     if player_starts:
-        message += 'Please take your first shot.'
+        BattleScreen.message(message + 'Please take your first shot.')
     else:
-        message += 'Please wait for the first enemy shot.'
-    BattleScreen.message(message)
+        BattleScreen.message(message + 'Please wait for the first enemy shot.')
 
 
 def _player_shot(connection, opponent_name):

@@ -8,39 +8,40 @@ class Connection(BaseConnection):
     """
     connection interface used by the game client.
     """
-    def __init__(self):
-        super().__init__()
-        self._msg_senders = []
-
-
     def establish(self):
         with Listener(('', self._server_port)) as connection_listener:
-            for _ in range(2):
-                client_connection = connection_listener.accept()
-                self.MessageListener(self._msg_queue, client_connection).start()
-                client_ip = connection_listener.last_accepted[0]
-                self._msg_senders.append(Client((client_ip, self._client_port)))
+            self._msg_senders = [
+                self._let_player_connect(connection_listener) for _ in range(2)
+            ]
 
 
-    def inform_shutdown(self):
-        for sender in self._msg_senders:
-            sender.send(ShutdownMessage())
+    def _let_player_connect(self, connection_listener):
+        client_connection = connection_listener.accept()
+        self.MessageListener(self._msg_queue, client_connection).start()
+        client_ip = connection_listener.last_accepted[0]
+        return Client((client_ip, self._client_port))
 
 
     def setup_identification(self):
-        player_names = []
-        for player_id in range(2):
-            other_id = self._other_player_id(player_id)
-            name_msg = self._get_message()
-            player_name = name_msg.player_name
-            player_names.append(player_name)
-            self._msg_senders[other_id].send(IDMessage(other_id, player_name))
+        return [self._player_name(player_id) for player_id in range(2)]
 
-        return player_names
+
+    def _player_name(self, player_id):
+        other_id = self._other_player_id(player_id)
+        name_msg = self._get_message()
+        player_name = name_msg.player_name
+        self._msg_senders[other_id].send(IDMessage(other_id, player_name))
+        return player_name
 
 
     def exchange_placements(self):
-        pass
+        ship_placements = [None, None]
+        for _ in range(2):
+            msg = self._get_message()
+            ship_placements[msg.player_id] = msg.coords
+            other_id = self._other_player_id(msg.player_id)
+            self._msg_senders[other_id].send(PlacementMessage())
+        return ship_placements
 
 
     def receive_shot(self):
@@ -49,6 +50,11 @@ class Connection(BaseConnection):
 
     def inform_shot_result(self):
         pass
+
+
+    def inform_shutdown(self):
+        for sender in self._msg_senders:
+            sender.send(ShutdownMessage())
 
 
     def _abortion_check(self, message):
