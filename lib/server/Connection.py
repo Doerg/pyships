@@ -45,11 +45,13 @@ class Connection(BaseConnection):
 
 
     def receive_shot(self):
-        pass
+        return self._get_message().coords
 
 
-    def inform_shot_result(self):
-        pass
+    def inform_shot_result(self, id, is_hit, ship_destroyed, game_over, coords):
+        self._msg_senders[id].send(
+            ShotResultMessage(is_hit, ship_destroyed, game_over, coords)
+        )
 
 
     def inform_shutdown(self):
@@ -65,7 +67,7 @@ class Connection(BaseConnection):
         :param message: the message to be checked
         """
         if isinstance(message, ExitMessage):
-            other_id = _other_player_id(ExitMessage.player_id)
+            other_id = self._other_player_id(message.player_id)
             self._msg_senders[other_id].send(ExitMessage())
             raise OpponentLeft
 

@@ -14,9 +14,9 @@ class ShotMessage(object):
     """
     tells the server the coordinates of the shot taken by the local player.
     """
-    def __init__(self, player_id, coordinates):
+    def __init__(self, player_id, coords):
         self.player_id = player_id
-        self.coordinates = coordinates
+        self.coords = coords
 
 
 ### messages from server only ###
@@ -35,12 +35,11 @@ class ShotResultMessage(object):
     tells the client the result of a shot, either taken by himself or the
     remote player.
     """
-    def __init__(self, is_hit, ship_destroyed, game_over, coordinates=None):
+    def __init__(self, is_hit, ship_destroyed, game_over, coords):
         self.is_hit = is_hit
         self.ship_destroyed = ship_destroyed
         self.game_over = game_over
-        if coordinates != None:
-            self.coordinates = coordinates
+        self.coords = coords
 
 
 class ShutdownMessage(object):

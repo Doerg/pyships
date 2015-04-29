@@ -36,27 +36,29 @@ def _handle_ship_placement(game_info, connection):
 def _handle_shot_exchange(game_info, connection):
 	for shooter_id in range(2):
 		receiver_id = _other_player_id(shooter_id)
-		fleet = game_info[receiver_id]['fleet']
+		receiving_fleet = game_info[receiver_id]['fleet']
 
 		shot_coords = connection.receive_shot()
 
 		#can be True (hit), False (no hit) or a list (destroyed ship):
-		shot_result = fleet.receive_shot(shot_coords)
+		shot_result = receiving_fleet.receive_shot(shot_coords)
 
 		if isinstance(shot_result, list): #list = full ship coords
 			is_hit = True
 			ship_destroyed = True
-			coordinates = shot_result
-			game_over = fleet.is_destroyed()
+			coords = shot_result #coords is a list holding all ship coords here
+			game_over = receiving_fleet.is_destroyed()
 		else:
 			is_hit = shot_result
 			ship_destroyed = False
-			coordinates = shot_coords
+			coords = shot_coords
 			game_over = False
 
 		connection.inform_shot_result(
-			shooter_id, receiver_id, is_hit,
-			ship_destroyed, game_over, coordinates
+			receiver_id, is_hit, ship_destroyed, game_over, shot_coords
+		)
+		connection.inform_shot_result(
+			shooter_id, is_hit, ship_destroyed, game_over, coords
 		)
 
 		if game_over:
