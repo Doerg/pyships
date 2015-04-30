@@ -9,17 +9,14 @@ class Connection(BaseConnection):
     connection interface used by the game client.
     """
     def establish(self):
+        self._msg_listeners = []
+        self._msg_senders = []
+
         with Listener(('', self._server_port)) as connection_listener:
-            self._msg_senders = [
-                self._let_player_connect(connection_listener) for _ in range(2)
-            ]
-
-
-    def _let_player_connect(self, connection_listener):
-        client_connection = connection_listener.accept()
-        self.MessageListener(self._msg_queue, client_connection).start()
-        client_ip = connection_listener.last_accepted[0]
-        return Client((client_ip, self._client_port))
+            for _ in range(2):
+                self._msg_listeners.append(connection_listener.accept())
+                client_ip = connection_listener.last_accepted[0]
+                self._msg_senders.append(Client((client_ip, self._client_port)))
 
 
     def setup_identification(self):
@@ -28,7 +25,7 @@ class Connection(BaseConnection):
 
     def _player_name(self, player_id):
         other_id = self._other_player_id(player_id)
-        name_msg = self._get_message()
+        name_msg = self._get_message(player_id)
         player_name = name_msg.player_name
         self._msg_senders[other_id].send(IDMessage(other_id, player_name))
         return player_name
@@ -44,8 +41,8 @@ class Connection(BaseConnection):
         return ship_placements
 
 
-    def receive_shot(self):
-        return self._get_message().coords
+    def receive_shot(self, shooter_id):
+        return self._get_message(shooter_id).coords
 
 
     def inform_shot_result(self, coords, is_hit, game_over, destroyed_ship):
@@ -63,6 +60,31 @@ class Connection(BaseConnection):
             sender.send(msg)
 
 
+    def _get_message(self, player_id=None):
+        """
+        if player_id is given, will return the oldest message in the player's
+        message listener. if player_id is not given, will return the oldest
+        message of both listeners.
+        :param player_id: the id of the player to get the message from
+        :return: the oldest message of a particular player
+        """
+        if player_id != None:
+            return self._read_message(self._msg_listeners[player_id])
+        else:
+            while True:
+                for player_id in range(2):
+                    if self._msg_listeners[player_id].poll():
+                        return self._read_message(
+                            self._msg_listeners[player_id]
+                        )
+
+
+    def _read_message(self, msg_listener):
+        message = msg_listener.recv()
+        self._abortion_check(message) #message might signal player exit
+        return message
+
+
     def _abortion_check(self, message):
         """
         checks whether the given message signals the exit of a remote player.
@@ -78,12 +100,3 @@ class Connection(BaseConnection):
 
     def _other_player_id(self, player_id):
         return abs(player_id - 1)
-
-
-    class MessageListener(BaseConnection.MessageListener):
-	    """
-	    daemon thread that puts all incoming messages into a message queue.
-	    """
-	    def __init__(self, msg_queue, connection):
-	        super().__init__(msg_queue, connection)
-	        self._termination_messages = (ExitMessage,)

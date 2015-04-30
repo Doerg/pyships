@@ -9,7 +9,6 @@ class Connection(BaseConnection):
     """
     connection interface used by the game client.
     """
-
     def establish(self, server_ip):
         """
         sets up message listener/sender objects for communication with the
@@ -23,9 +22,7 @@ class Connection(BaseConnection):
                     self._msg_sender = Client((server_ip, self._server_port))
             except Exception: #general b/c different things can go wrong
                 return False
-            server_connection = connection_listener.accept()
-
-        self.MessageListener(self._msg_queue, server_connection).start()
+            self._msg_listener = connection_listener.accept()
         return True
 
 
@@ -86,6 +83,21 @@ class Connection(BaseConnection):
         return self._get_message()
 
 
+    def has_message(self):
+        return self._msg_sender.poll()
+
+
+    def _get_message(self):
+        """
+        returns the oldest message in the message queue. blocks until a
+        message is available.
+        :return: the oldest message in the message queue
+        """
+        message = self._msg_listener.recv()
+        self._abortion_check(message) #message might signal some sort of exit
+        return message
+
+
     def _abortion_check(self, message):
         """
         checks whether the given message signals the exit of the remote player
@@ -118,12 +130,3 @@ class Connection(BaseConnection):
 
         def __exit__(self, type, value, traceback):
             signal.alarm(0)
-
-
-    class MessageListener(BaseConnection.MessageListener):
-        """
-        daemon thread that puts all incoming messages into a message queue.
-        """
-        def __init__(self, msg_queue, connection):
-            super().__init__(msg_queue, connection)
-            self._termination_messages = (ExitMessage, ShutdownMessage)

@@ -17,6 +17,7 @@ class Fleet(object):
         for ship in self._intact_ships:
             if ship.is_hit(coords):
                 if ship.is_destroyed():
+                    self._intact_ships.remove(ship)
                     self.destroyed_ship = ship.full_coords
                 return True
 
