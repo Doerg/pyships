@@ -34,11 +34,11 @@ class ShotResultMessage(object):
     tells the client the result of a shot, either taken by himself or the
     remote player.
     """
-    def __init__(self, is_hit, ship_destroyed, game_over, coords):
-        self.is_hit = is_hit
-        self.ship_destroyed = ship_destroyed
-        self.game_over = game_over
+    def __init__(self, coords, is_hit, game_over, destroyed_ship):
         self.coords = coords
+        self.is_hit = is_hit
+        self.game_over = game_over
+        self.destroyed_ship = destroyed_ship
 
 
 class ShutdownMessage(object):

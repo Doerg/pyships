@@ -48,15 +48,19 @@ class Connection(BaseConnection):
         return self._get_message().coords
 
 
-    def inform_shot_result(self, id, is_hit, ship_destroyed, game_over, coords):
-        self._msg_senders[id].send(
-            ShotResultMessage(is_hit, ship_destroyed, game_over, coords)
+    def inform_shot_result(self, coords, is_hit, game_over, destroyed_ship):
+        self._send_all(
+            ShotResultMessage(coords, is_hit, game_over, destroyed_ship)
         )
 
 
     def inform_shutdown(self):
+        self._send_all(ShutdownMessage())
+
+
+    def _send_all(self, msg):
         for sender in self._msg_senders:
-            sender.send(ShutdownMessage())
+            sender.send(msg)
 
 
     def _abortion_check(self, message):

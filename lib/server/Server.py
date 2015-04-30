@@ -24,29 +24,17 @@ def run():
 		return
 
 
-	#ugly ass code here. needs redesign
 def _handle_shot_exchange(shooter_id, fleets, connection):
 	receiver_id = _other_player_id(shooter_id)
+	receiving_fleet = fleets[receiver_id]
+
 	shot_coords = connection.receive_shot()
-	shot_result = fleets[receiver_id].receive_shot(shot_coords)
-	#shot_result can be True (hit), False (no hit) or list (destroyed ship)
-
-	if isinstance(shot_result, list): #list = full ship coords
-		is_hit = True
-		ship_destroyed = True
-		coords = shot_result #coords is a list holding all ship coords here
-		game_over = fleets[receiver_id].is_destroyed()
-	else:
-		is_hit = shot_result
-		ship_destroyed = False
-		coords = shot_coords
-		game_over = False
+	is_hit = receiving_fleet.receive_shot(shot_coords)
+	destroyed_ship = receiving_fleet.destroyed_ship #might be None
+	game_over = receiving_fleet.destroyed
 
 	connection.inform_shot_result(
-		receiver_id, is_hit, ship_destroyed, game_over, shot_coords
-	)
-	connection.inform_shot_result(
-		shooter_id, is_hit, ship_destroyed, game_over, coords
+		shot_coords, is_hit, game_over, destroyed_ship
 	)
 
 	if game_over:

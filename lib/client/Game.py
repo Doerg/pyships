@@ -113,15 +113,15 @@ def _player_shot(connection, opponent_name):
     shot_coords = BattleScreen.let_player_shoot()
     shot_result = connection.deliver_shot(shot_coords)
 
-    if shot_result.ship_destroyed:
-        BattleScreen.reveal_ship(shot_result.coords)
+    if shot_result.destroyed_ship:
+        BattleScreen.reveal_ship(shot_result.destroyed_ship)
         if shot_result.game_over:
             BattleScreen.handle_exit('Congratulations! You win!')
             raise GameOver
         else:
             BattleScreen.message(
                 "You destroyed a ship of size %d! It's %s's turn now..." %
-                (len(shot_result.coords), opponent_name)
+                (len(shot_result.destroyed_ship), opponent_name)
             )
     else:
         BattleScreen.show_shot(
@@ -146,7 +146,7 @@ def _opponent_shot(connection, opponent_name):
     shot_result = connection.receive_shot()
     BattleScreen.show_shot(shot_result.coords, shot_result.is_hit)
 
-    if shot_result.ship_destroyed:
+    if shot_result.destroyed_ship:
         if shot_result.game_over:
             BattleScreen.handle_exit(
                 '%s has destroyed your fleet! You lose!' % opponent_name
