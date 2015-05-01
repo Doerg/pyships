@@ -115,6 +115,7 @@ class Connection(BaseConnection):
         if isinstance(message, ExitMessage):
             other_id = self._other_player_id(message.player_id)
             self._msg_senders[other_id].send(ExitMessage())
+            logging.info('player %d left the game' % message.player_id)
             raise OpponentLeft
 
 

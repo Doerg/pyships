@@ -87,7 +87,8 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     :param opponent_name: the name of the opponent
     :param player_starts: boolean indicating whether player is first to shoot
     """
-    ship_placements = BattleScreen.player_ship_placements()
+    ships = (5, 4, 4, 3, 3, 3, 2, 2, 2, 2)
+    ship_placements = BattleScreen.player_ship_placements(ships)
     connection.send_placements(ship_placements)
     BattleScreen.show_battle_keys()
 

@@ -35,9 +35,10 @@ def introduce_opponent(opponent_name):
     message("Your opponent is '%s'! Please place your ships." % opponent_name)
 
 
-def player_ship_placements():
+def player_ship_placements(ships):
     """
     lets the player position his ships.
+    :param ships: the ships to be placed, represented by integers (their size)
     :return: the coordinates of all placed ships
     """
     map_size = UIData.battle['map']['logical size']
@@ -47,7 +48,6 @@ def player_ship_placements():
 
     Ship.setup_class_vars(the_map, map_size)
 
-    ships = (5, 4, 4, 3, 3, 3, 2, 2, 2, 2)
     coords = [_position_ship(Ship(size)) for size in ships]
 
     _player_map.draw_ship_placements()

@@ -1,27 +1,21 @@
 import logging
 
-LOG_LEVELS = {
-    'CRITICAL': 50,
-    'ERROR': 40,
-    'WARNING': 30,
-    'INFO': 20,
-    'DEBUG': 10,
-    'NOTSET': 0
-}
+LOG_LEVELS = ('CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET')
+LOG_FORMAT = "%(levelname)s::%(asctime)s::%(threadName)s::" + \
+             "%(filename)s:%(lineno)d:: %(msg)s"
 
-LOG_FORMAT = "%(levelname)s::%(asctime)s::%(threadName)s::%(filename)s:%(lineno)d:: %(msg)s"
 
-def setup_logging(lvl, path):
-    logger = logging.getLogger()
-
-    formatter = logging.Formatter(LOG_FORMAT)
-
+def setup_logging(is_server, lvl, path):
     if path:
         handler = logging.FileHandler(path, 'w')
     else:
-        handler = logging.StreamHandler()
+        if is_server:
+            handler = logging.StreamHandler()
+        else:    #client shouldn't log to stdout, use default logfile instead
+            handler = logging.FileHandler('client.log', 'w')
 
-    handler.setFormatter(formatter)
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+
+    logger = logging.getLogger()
     logger.addHandler(handler)
-
-    logger.setLevel(LOG_LEVELS['INFO'])
+    logger.setLevel(lvl)

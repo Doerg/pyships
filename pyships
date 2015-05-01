@@ -14,18 +14,17 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        '-l', '--loglevel', dest='lvl', choices=LOG_LEVELS.keys(),
-        default='INFO', help='set log level (default is INFO)'
+        '-l', '--loglevel', dest='lvl', choices=LOG_LEVELS, default='INFO',
+        type=str.upper, help='set log level (default is INFO)'
     )
 
     parser.add_argument(
-        '-o', '--output', dest='path', type=str,
-        help='set log file path'
+        '-o', '--output', dest='path', type=str, help='set log file path'
     )
 
     args = parser.parse_args()
 
-    setup_logging(args.lvl, args.path)
+    setup_logging(args.server, args.lvl, args.path)
 
     if args.server:
         from server import Server
