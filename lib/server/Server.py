@@ -1,85 +1,39 @@
-from multiprocessing.connection import Client, Listener
-from queue import Queue
-from Messages import *
-from time import sleep
+from CustomExceptions import *
+from .Connection import Connection
+from .Fleet import Fleet
+import atexit
 
 
 def run():
-    server_port = 12346
-    client_port = 12345
+	connection = Connection()
+	connection.establish()
 
-    connection_listener = Listener(('', server_port))
-    client_connection = connection_listener.accept()
+	atexit.register(connection.inform_shutdown)
 
-    msg_queue = Queue()
-    msg_listener = MessageListener(msg_queue, client_connection)
-    msg_listener.start()
+	try:
+		connection.setup_identification()
+		fleets = [
+			Fleet(ship_placements) for ship_placements in
+			connection.exchange_placements()
+		]
+		while True:
+			for shooter_id in range(2):
+				receiving_fleet = fleets[abs(shooter_id - 1)]
+				_handle_shot(shooter_id, receiving_fleet, connection)
 
-    client_ip = connection_listener.last_accepted[0]
-    msg_sender = Client((client_ip, client_port))
-    connection_listener.close()
-
-    sleep(3)
-    print('Player name: %s' % msg_queue.get().player_name)
-    msg_sender.send(IDMessage(0, 'XXXTheEnemyXXX'))
-
-    msg = msg_queue.get()
-    if isinstance(msg, ExitMessage):
-        return
-
-    print('Player ship placements: %s' % msg.coords)
-    sleep(3)
-    msg_sender.send(PlacementMessage())
+	except (GameOver, OpponentLeft):
+		return
 
 
-    #some shot exchanges...
+def _handle_shot(shooter_id, receiving_fleet, connection):
+	shot_coords = connection.receive_shot(shooter_id)
+	is_hit = receiving_fleet.receive_shot(shot_coords)
+	destroyed_ship = receiving_fleet.destroyed_ship #might be None
+	game_over = receiving_fleet.destroyed
 
-    msg = msg_queue.get()
-    if isinstance(msg, ExitMessage):
-        return
-    print('player shot at coords %s' % msg.coordinates)
-    msg_sender.send(ShotResultMessage(False, False, False))
-    sleep(3)
-    msg_sender.send(ShotResultMessage(False, False, False, coordinates=(4,5)))
+	connection.inform_shot_result(
+		shot_coords, is_hit, game_over, destroyed_ship
+	)
 
-    #msg_sender.send(ShutdownMessage())
-    #return
-
-    msg = msg_queue.get()
-    if isinstance(msg, ExitMessage):
-        return
-    print('player shot at coords %s' % msg.coordinates)
-    msg_sender.send(ShotResultMessage(True, False, False))
-    sleep(3)
-    msg_sender.send(ShotResultMessage(True, False, False, coordinates=(12,17)))
-
-
-    msg = msg_queue.get()
-    if isinstance(msg, ExitMessage):
-        return
-    print('player shot at coords %s' % msg.coordinates)
-    ship_coords = ((5,6),(5,7),(5,8),(5,9))
-    msg_sender.send(
-        ShotResultMessage(True, True, False, coordinates=ship_coords)
-    )
-    sleep(3)
-    msg_sender.send(
-        ShotResultMessage(True, True, False, coordinates=(20,20))
-    )
-
-
-    msg = msg_queue.get()
-    if isinstance(msg, ExitMessage):
-        return
-    print('player shot at coords %s' % msg.coordinates)
-    ship_coords = ((10,10),(11,10),(12,10),(13,10))
-    msg_sender.send(
-        ShotResultMessage(True, True, False, coordinates=ship_coords)
-    )
-    sleep(3)
-    msg_sender.send(
-        ShotResultMessage(True, True, True, coordinates=(22,8))
-    )
-
-
-    msg_sender.send(ExitMessage())
+	if game_over:
+		raise GameOver

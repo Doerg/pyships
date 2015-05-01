@@ -99,10 +99,9 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     connection.acknowledge_opponent_placements()
     message = '%s has finished ship placement. ' % opponent_name
     if player_starts:
-        message += 'Please take your first shot.'
+        BattleScreen.message(message + 'Please take your first shot.')
     else:
-        message += 'Please wait for the first enemy shot.'
-    BattleScreen.message(message)
+        BattleScreen.message(message + 'Please wait for the first enemy shot.')
 
 
 def _player_shot(connection, opponent_name):
@@ -111,22 +110,22 @@ def _player_shot(connection, opponent_name):
     :param connection: the connection to the server
     :param opponent_name: the name of the opponent
     """
-    shot_coordinates = BattleScreen.let_player_shoot()
-    shot_result = connection.deliver_shot(shot_coordinates)
+    shot_coords = BattleScreen.let_player_shoot()
+    shot_result = connection.deliver_shot(shot_coords)
 
-    if shot_result.ship_destroyed:
-        BattleScreen.reveal_ship(shot_result.coordinates)
+    if shot_result.destroyed_ship:
+        BattleScreen.reveal_ship(shot_result.destroyed_ship)
         if shot_result.game_over:
             BattleScreen.handle_exit('Congratulations! You win!')
             raise GameOver
         else:
             BattleScreen.message(
                 "You destroyed a ship of size %d! It's %s's turn now..." %
-                (len(shot_result.coordinates), opponent_name)
+                (len(shot_result.destroyed_ship), opponent_name)
             )
     else:
         BattleScreen.show_shot(
-            shot_coordinates, shot_result.is_hit, opponent=True
+            shot_coords, shot_result.is_hit, opponent=True
         )
         if shot_result.is_hit:
             BattleScreen.message(
@@ -145,9 +144,9 @@ def _opponent_shot(connection, opponent_name):
     :param opponent_name: the name of the opponent
     """
     shot_result = connection.receive_shot()
-    BattleScreen.show_shot(shot_result.coordinates, shot_result.is_hit)
+    BattleScreen.show_shot(shot_result.coords, shot_result.is_hit)
 
-    if shot_result.ship_destroyed:
+    if shot_result.destroyed_ship:
         if shot_result.game_over:
             BattleScreen.handle_exit(
                 '%s has destroyed your fleet! You lose!' % opponent_name

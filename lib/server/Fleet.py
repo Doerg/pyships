@@ -6,22 +6,26 @@ class Fleet(object):
 
     def receive_shot(self, coords):
         """
-        checks whether the shot hits a ship of this fleet.
+        checks whether the shot hits a ship of this fleet. if a ship got
+        destroyed by this shot, the instance variable destroyed_ship will be set
+        to the ship's full coordinates, ready to be queried.
         :param coords: coordinates of the shot
-        :return: False when no ship is hit, True when a ship is hit and not
-        destroyed, the ship's coordinates when the shot destroyed the ship.
+        :return: False when no ship is hit, True when a ship is hit
         """
+        self.destroyed_ship = None
+
         for ship in self._intact_ships:
             if ship.is_hit(coords):
                 if ship.is_destroyed():
                     self._intact_ships.remove(ship)
-                    return ship.full_coords
+                    self.destroyed_ship = ship.full_coords
                 return True
 
         return False
 
 
-    def is_destroyed(self):
+    @property
+    def destroyed(self):
         """
         checks whether the fleet is destroyed, meaning it has no intact ships
         left.
