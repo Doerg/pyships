@@ -12,19 +12,19 @@ if __name__ == "__main__":
         '-s', '--server', action='store_true',
         help='start a pyships server'
     )
-    
+
     parser.add_argument(
         '-l', '--loglevel', dest='lvl', choices=LOG_LEVELS.keys(),
-        help='set log level'
+        default='INFO', help='set log level (default is INFO)'
     )
-    
+
     parser.add_argument(
         '-o', '--output', dest='path', type=str,
         help='set log file path'
     )
-    
+
     args = parser.parse_args()
-    
+
     setup_logging(args.lvl, args.path)
 
     if args.server:

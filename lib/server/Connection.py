@@ -2,6 +2,7 @@ from multiprocessing.connection import Client, Listener
 from Messages import *
 from CustomExceptions import *
 from BaseConnection import BaseConnection
+import logging
 
 
 class Connection(BaseConnection):
@@ -13,10 +14,12 @@ class Connection(BaseConnection):
         self._msg_senders = []
 
         with Listener(('', self._server_port)) as connection_listener:
+            logging.info('listening for connections...')
             for _ in range(2):
                 self._msg_listeners.append(connection_listener.accept())
                 client_ip = connection_listener.last_accepted[0]
                 self._msg_senders.append(Client((client_ip, self._client_port)))
+                logging.info('client with ip %s logged on' % client_ip)
 
 
     def setup_identification(self):
@@ -28,30 +31,47 @@ class Connection(BaseConnection):
         name_msg = self._get_message(player_id)
         player_name = name_msg.player_name
         self._msg_senders[other_id].send(IDMessage(other_id, player_name))
+        logging.info(
+            "player '%s' received id %d" %
+            (player_name.decode("utf-8"), player_id)
+        )
         return player_name
 
 
     def exchange_placements(self):
+        logging.info('Waiting for ship placements...')
         ship_placements = [None, None]
         for _ in range(2):
             msg = self._get_message()
             ship_placements[msg.player_id] = msg.coords
             other_id = self._other_player_id(msg.player_id)
             self._msg_senders[other_id].send(PlacementMessage())
+            logging.info(
+                'player %d placed the following ships: %s' %
+                (msg.player_id, msg.coords)
+            )
         return ship_placements
 
 
     def receive_shot(self, shooter_id):
-        return self._get_message(shooter_id).coords
+        logging.info('Waiting for player %d to shoot...' % shooter_id)
+        coords = self._get_message(shooter_id).coords
+        logging.info(
+            'player %d shot at coordinates %s' % (shooter_id, coords)
+        )
+        return coords
 
 
     def inform_shot_result(self, coords, is_hit, game_over, destroyed_ship):
+        if game_over:
+            logging.info('game over')
         self._send_all(
             ShotResultMessage(coords, is_hit, game_over, destroyed_ship)
         )
 
 
     def inform_shutdown(self):
+        logging.info('shutting down')
         self._send_all(ShutdownMessage())
 
 

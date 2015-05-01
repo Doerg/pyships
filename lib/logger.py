@@ -11,9 +11,9 @@ LOG_LEVELS = {
 
 LOG_FORMAT = "%(levelname)s::%(asctime)s::%(threadName)s::%(filename)s:%(lineno)d:: %(msg)s"
 
-def setup_logging(lvl='WARNING', path=None):
+def setup_logging(lvl, path):
     logger = logging.getLogger()
-    
+
     formatter = logging.Formatter(LOG_FORMAT)
 
     if path:
@@ -23,5 +23,5 @@ def setup_logging(lvl='WARNING', path=None):
 
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    
-    logger.setLevel(LOG_LEVELS.get(lvl, logging.WARNING))
+
+    logger.setLevel(LOG_LEVELS['INFO'])
