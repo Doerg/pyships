@@ -11,11 +11,16 @@ LOG_LEVELS = {
 
 LOG_FORMAT = "%(levelname)s::%(asctime)s::%(threadName)s::%(filename)s:%(lineno)d:: %(msg)s"
 
-def setup_logging(lvl='WARNING'):
+def setup_logging(lvl='WARNING', path=None):
     logger = logging.getLogger()
     
     formatter = logging.Formatter(LOG_FORMAT)
-    handler = logging.StreamHandler()
+
+    if path:
+        handler = logging.FileHandler(path, 'w')
+    else:
+        handler = logging.StreamHandler()
+
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     
