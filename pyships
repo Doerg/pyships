@@ -26,8 +26,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     setup_logging(args.lvl, args.path)
-    
-    logging.error('test')
 
     if args.server:
         from server import Server
