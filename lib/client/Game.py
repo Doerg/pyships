@@ -40,7 +40,7 @@ def _run_game(stdscr):
 
     except (ConnectionAborted, GameOver):
         return
-    except ProgramExit:
+    except (ProgramExit, KeyboardInterrupt):
         connection.inform_exit()
     except ServerShutdown:
         BattleScreen.handle_exit('Server has shut down!')
