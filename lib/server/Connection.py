@@ -71,8 +71,16 @@ class Connection(BaseConnection):
 
 
     def inform_shutdown(self):
-        logging.info('shutting down')
         self._send_all(ShutdownMessage())
+
+
+    def close(self):
+        """
+        closes all message senders and listeners.
+        """
+        logging.info('shutting down')
+        for connection in self._msg_senders + self._msg_listeners:
+            connection.close()
 
 
     def _send_all(self, msg):

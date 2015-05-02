@@ -84,7 +84,19 @@ class Connection(BaseConnection):
 
 
     def has_message(self):
+        """
+        returns whether there is a message from the server not read yet.
+        :return: True if a message from the server is available, False otherwise
+        """
         return self._msg_sender.poll()
+
+
+    def close(self):
+        """
+        closes both message sender and listener.
+        """
+        self._msg_sender.close()
+        self._msg_listener.close()
 
 
     def _get_message(self):

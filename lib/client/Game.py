@@ -1,7 +1,8 @@
-import curses
 from .Connection import Connection
-from CustomExceptions import *
 from . import UIData, TitleScreen, BattleScreen
+from CustomExceptions import *
+import curses
+import atexit
 
 
 def run():
@@ -22,6 +23,8 @@ def _run_game(stdscr):
 
     try:
         connection, player_name = _establish_connection()
+
+        atexit.register(connection.close)
 
         TitleScreen.uninit()
         BattleScreen.init(player_name)

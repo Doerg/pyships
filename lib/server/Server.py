@@ -8,7 +8,7 @@ def run():
 	connection = Connection()
 	connection.establish()
 
-	atexit.register(connection.inform_shutdown)
+	atexit.register(connection.close)
 
 	try:
 		connection.setup_identification()
@@ -23,6 +23,8 @@ def run():
 
 	except (GameOver, OpponentLeft):
 		return
+	except KeyboardInterrupt:
+		connection.inform_shutdown()
 
 
 def _handle_shot(shooter_id, receiving_fleet, connection):
