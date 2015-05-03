@@ -23,10 +23,21 @@ class Connection(BaseConnection):
 
 
     def setup_identification(self):
+        """
+        lets both players know their id and each other's names. mostly handled
+        through method _player_name.
+        :return: a list containing both player's names, ordered by id
+        """
         return [self._player_name(player_id) for player_id in range(2)]
 
 
     def _player_name(self, player_id):
+        """
+        receives a name message from one player and sends an id message out to
+        the other player, containing the opponent's name and the player's id.
+        :param player_id: the id of the player to receive the name message from
+        :return: the name of the player with the given player id
+        """
         other_id = self._other_player_id(player_id)
         name_msg = self._get_message(player_id)
         player_name = name_msg.player_name
@@ -39,6 +50,12 @@ class Connection(BaseConnection):
 
 
     def exchange_placements(self):
+        """
+        receives a placement message from each player. for each message, the
+        other player will be informed about the arrival of the opponent's
+        placements by an empty placement message (containing no data).
+        :return: a list containing both player's ship placements, ordered by id
+        """
         logging.info('Waiting for ship placements...')
         ship_placements = [None, None]
         for _ in range(2):
@@ -54,6 +71,12 @@ class Connection(BaseConnection):
 
 
     def receive_shot(self, shooter_id):
+        """
+        receives a shot message of the player with the given id. the shot's
+        coordinates will be extracted from the message and returned.
+        :param shooter_id: the id of the player to receive the shot message from
+        :return: the coordinates of the shot
+        """
         logging.info('Waiting for player %d to shoot...' % shooter_id)
         coords = self._get_message(shooter_id).coords
         logging.info(
@@ -63,6 +86,14 @@ class Connection(BaseConnection):
 
 
     def inform_shot_result(self, coords, is_hit, game_over, destroyed_ship):
+        """
+        send a shot result message out to both players.
+        :param coords: the coordinates of the shot
+        :param is_hit: True if the shot was a hit, False otherwise
+        :param game_over: True if the shot ended the game, False otherwise
+        :param destroyed_ship: if a ship was destroyed by the shot, this will
+        contain the ship's coordinates. otherwise it will be None
+        """
         if game_over:
             logging.info('game over')
         self._send_all(
@@ -71,6 +102,9 @@ class Connection(BaseConnection):
 
 
     def inform_shutdown(self):
+        """
+        sends a shutdown message out to both players.
+        """
         self._send_all(ShutdownMessage())
 
 
@@ -83,16 +117,20 @@ class Connection(BaseConnection):
             connection.close()
 
 
-    def _send_all(self, msg):
+    def _send_all(self, message):
+        """
+        sends the given message to both players.
+        :param message: the message to be sent
+        """
         for sender in self._msg_senders:
-            sender.send(msg)
+            sender.send(message)
 
 
     def _get_message(self, player_id=None):
         """
         if player_id is given, will return the oldest message in the player's
-        message listener. if player_id is not given, will return the oldest
-        message of both listeners.
+        message listener. if no player_id is given, it will return the oldest
+        message of either listener.
         :param player_id: the id of the player to get the message from
         :return: the oldest message of a particular player
         """
@@ -108,6 +146,11 @@ class Connection(BaseConnection):
 
 
     def _read_message(self, msg_listener):
+        """
+        returns a message read from the given message listener.
+        :param msg_listener: the listener to read the message from
+        :return: the oldest message of this listener
+        """
         message = msg_listener.recv()
         self._abortion_check(message) #message might signal player exit
         return message
@@ -128,4 +171,10 @@ class Connection(BaseConnection):
 
 
     def _other_player_id(self, player_id):
+        """
+        calculates the other player's id based on the given player id. returns
+        1 if player_id is 0 or 0 if player_id is 1.
+        :param player_id: the id of a player
+        :return: the id of the other player
+        """
         return abs(player_id - 1)

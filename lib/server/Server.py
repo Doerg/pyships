@@ -5,6 +5,9 @@ import atexit
 
 
 def run():
+	"""
+    top level server logic.
+    """
 	connection = Connection()
 	connection.establish()
 
@@ -28,6 +31,13 @@ def run():
 
 
 def _handle_shot(shooter_id, receiving_fleet, connection):
+	"""
+	waits for a player to shoot, gathers the shot result and informs both
+	players about the result.
+	:param shooter_id: the id of the player to shoot
+	:param receiving_fleet: the fleet that will receive the shot
+	:param connection: the network connection to both players
+	"""
 	shot_coords = connection.receive_shot(shooter_id)
 	is_hit = receiving_fleet.receive_shot(shot_coords)
 	destroyed_ship = receiving_fleet.destroyed_ship #might be None
