@@ -156,6 +156,35 @@ def let_player_shoot():
                 return _opponent_map.fire_shot()
 
 
+def ask_for_another_battle(msg):
+    """
+    asks the player if he is willing to play a rematch. only accepts inputs
+    y/n.
+    :param msg: the message to display to the player
+    :return: True if the player wants a rematch, False otherwise
+    """
+    message(msg + ' Play again? (Y/N)')
+
+    while True:
+        key = _message_bar.get_key()
+        if key == UIData.key_codes['yes']:
+            return True
+        if key == UIData.key_codes['no']:
+            return False
+
+
+def reset_battle():
+    """
+    resets the player's and opponent's map to their default empty state.
+    """
+    global _player_map, _opponent_map
+
+    _player_map = PlayerMap()
+    _opponent_map = OpponentMap()
+    _player_map.update()
+    _opponent_map.update()
+
+
 def handle_exit(msg):
     """
     displays the message and returns once the player pressed exit.

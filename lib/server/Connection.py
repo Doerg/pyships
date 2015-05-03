@@ -101,6 +101,18 @@ class Connection(BaseConnection):
         )
 
 
+    def exchange_rematch_willingness(self):
+        """
+        waits for a rematch message by each player. once a message arrives, the
+        other player will be informed about it.
+        """
+        for _ in range(2):
+            msg = self._get_message()
+            logging.info('player %d agrees to a rematch' % msg.player_id)
+            other_id = self._other_player_id(msg.player_id)
+            self._msg_senders[other_id].send(RematchMessage())
+
+
     def inform_shutdown(self):
         """
         sends a shutdown message out to both players.

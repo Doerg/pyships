@@ -16,7 +16,7 @@ class Fleet(object):
 
         for ship in self._intact_ships:
             if ship.is_hit(coords):
-                if ship.is_destroyed():
+                if ship.destroyed:
                     self._intact_ships.remove(ship)
                     self.destroyed_ship = ship.full_coords
                 return True
@@ -53,7 +53,8 @@ class Fleet(object):
             return False
 
 
-        def is_destroyed(self):
+        @property
+        def destroyed(self):
             """
             checks whether the ship is destroyed.
             :return: True when the ship is destroyed, False otherwise

@@ -20,7 +20,7 @@ class Connection(BaseConnection):
             try:
                 with Connection.Timeout():
                     self._msg_sender = Client((server_ip, self._server_port))
-            except Exception: #general b/c different things can go wrong
+            except:  #general b/c different things can go wrong
                 return False
             self._msg_listener = connection_listener.accept()
         return True
@@ -56,7 +56,7 @@ class Connection(BaseConnection):
 
     def acknowledge_opponent_placements(self):
         """
-        waits for message acknowledging that the remote player finished ship
+        waits a for message acknowledging that the remote player finished ship
         placements.
         """
         self._get_message()
@@ -81,6 +81,21 @@ class Connection(BaseConnection):
         :return: the result of a shot taken by the remote player
         """
         return self._get_message()
+
+
+    def inform_rematch_willingness(self):
+        """
+        informs the opponent that the player wants a rematch.
+        """
+        self._msg_sender.send(RematchMessage(self.player_id))
+
+
+    def acknowledge_rematch_willingness(self):
+        """
+        waits a for message acknowledging that the remote player is willing to
+        play a rematch.
+        """
+        self._get_message()
 
 
     def has_message(self):

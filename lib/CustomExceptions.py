@@ -18,7 +18,7 @@ class ServerShutdown(Exception):
 
 class ConnectionAborted(Exception):
     """
-    signal that player canceled connection and exits from title screen.
+    signal that player canceled connection and exited from title screen.
     """
     pass
 
@@ -27,6 +27,7 @@ class GameOver(Exception):
     signal that one of the two players won.
     """
     pass
+
 
 class TimeoutError(Exception):
     """

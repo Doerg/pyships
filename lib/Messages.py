@@ -52,7 +52,7 @@ class ShutdownMessage(object):
 class ExitMessage(object):
     """
     can either be sent by the client to tell the server that the local player
-    terminated the program, or it can be sent by the server to tell the client
+    terminated the program, or it can be sent by the server to tell a client
     that the remote player terminated the program.
     """
     def __init__(self, player_id=None):
@@ -63,7 +63,7 @@ class ExitMessage(object):
 class PlacementMessage(object):
     """
     can either be sent by the client to tell the server the local player's
-    ship placements, or it can be sent by the server to tell the client that
+    ship placements, or it can be sent by the server to tell a client that
     the remote player finished ship placements.
     """
     def __init__(self, player_id=None, coords=None):
@@ -71,3 +71,14 @@ class PlacementMessage(object):
             self.player_id = player_id
         if coords != None:
             self.coords = coords
+
+
+class RematchMessage(object):
+    """
+    can either be sent by the client to tell the server that the local player
+    is willing to player a rematch, or it can be sent by the server to tell a
+    client that the remote player agreed to a rematch.
+    """
+    def __init__(self, player_id=None):
+        if player_id != None:
+            self.player_id = player_id

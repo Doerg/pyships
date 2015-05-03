@@ -10,7 +10,9 @@ key_codes = {
     'rotate': ord(' '),
     'place ship': 10,   #enter
     'fire': 10,         #enter
-    'exit': ord('q')
+    'exit': ord('q'),
+    'yes': ord('y'),
+    'no': ord('n')
 }
 
 
