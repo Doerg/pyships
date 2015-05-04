@@ -20,50 +20,30 @@ class Connection(BaseConnection):
 
         with Listener(('', self._server_port)) as connection_listener:
             logging.info('listening for connections...')
-            self._first_client_connection(connection_listener)
-            self._second_client_connection(connection_listener)
+
+            self._setup_connection(connection_listener)  #1st client connection
+
+            while True:                                  #2nd client connection
+                try:
+                    with BaseConnection.Timeout():
+                        self._setup_connection(connection_listener)
+                        break
+                except TimeoutError:
+                    pass
+                if self._msg_listeners[0].poll(): #true if 1st client terminated
+                    logging.info('client left again')
+                    raise OpponentLeft
 
         self.established = True
 
 
-    def _first_client_connection(self, connection_listener):
+    def _setup_connection(self, connection_listener):
         """
-        listens for the first client connection and sets up a message sender
-        once the connection has been registered.
+        listens for a client to connect to the server and sets up a message
+        listener and sender to that client once connected.
         :param connection_listener: the connection listener
         """
         self._msg_listeners.append(connection_listener.accept())
-        self._setup_msg_sender(connection_listener)
-
-
-    def _second_client_connection(self, connection_listener):
-        """
-        listens for the second client connection and sets up a message sender
-        once the connection has been registered. as a special case, this method
-        has to periodically query whether the first player terminated his
-        connection while waiting for the second player to connect. if that is
-        the case, connection establishment is aborted.
-        :param connection_listener: the connection listener
-        """
-        while True:
-            try:
-                with BaseConnection.Timeout():
-                    self._msg_listeners.append(connection_listener.accept())
-                    self._setup_msg_sender(connection_listener)
-                    return
-            except TimeoutError:
-                pass
-            if self._msg_listeners[0].poll(): #true if first client terminated
-                logging.info('client left again')
-                raise OpponentLeft
-
-
-    def _setup_msg_sender(self, connection_listener):
-        """
-        sets up a message sender to the player that previously connected to the
-        server.
-        :param connection_listener: the connection listener
-        """
         client_ip = connection_listener.last_accepted[0]
         self._msg_senders.append(Client((client_ip, self._client_port)))
         logging.info('client with ip %s logged on' % client_ip)
