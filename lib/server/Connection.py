@@ -10,6 +10,11 @@ class Connection(BaseConnection):
     connection interface used by the game client.
     """
     def establish(self):
+        """
+        listens for two connections and sets up a message listener and message
+        sender for each connection. the listeners and senders will be ordered
+        by id.
+        """
         self._msg_listeners = []
         self._msg_senders = []
 
@@ -22,31 +27,27 @@ class Connection(BaseConnection):
                 logging.info('client with ip %s logged on' % client_ip)
 
 
-    def setup_identification(self):
+    def assign_ids(self):
         """
-        lets both players know their id and each other's names. mostly handled
-        through method _player_name.
-        :return: a list containing both player's names, ordered by id
+        assigns each player his id.
         """
-        return [self._player_name(player_id) for player_id in range(2)]
+        for player_id in range(2):
+            self._msg_senders[player_id].send(IDMessage(player_id))
 
 
-    def _player_name(self, player_id):
+    def name_exchange(self):
         """
-        receives a name message from one player and sends an id message out to
-        the other player, containing the opponent's name and the player's id.
-        :param player_id: the id of the player to receive the name message from
-        :return: the name of the player with the given player id
+        for each player, it receives a name message and delivers it to
+        the other.
         """
-        other_id = self._other_player_id(player_id)
-        name_msg = self._get_message(player_id)
-        player_name = name_msg.player_name
-        self._msg_senders[other_id].send(IDMessage(other_id, player_name))
-        logging.info(
-            "player '%s' received id %d" %
-            (player_name.decode("utf-8"), player_id)
-        )
-        return player_name
+        for player_id in range(2):
+            other_id = self._other_player_id(player_id)
+            name_msg = self._get_message(player_id)
+            self._msg_senders[other_id].send(name_msg)
+            logging.info(
+                "player '%s' received id %d" %
+                (name_msg.player_name.decode('utf-8'), player_id)
+            )
 
 
     def exchange_placements(self):
@@ -176,9 +177,10 @@ class Connection(BaseConnection):
         :param message: the message to be checked
         """
         if isinstance(message, ExitMessage):
-            other_id = self._other_player_id(message.player_id)
-            self._msg_senders[other_id].send(ExitMessage())
-            logging.info('player %d left the game' % message.player_id)
+            if message.player_id != None:
+                other_id = self._other_player_id(message.player_id)
+                self._msg_senders[other_id].send(ExitMessage())
+                logging.info('player %d left the game' % message.player_id)
             raise OpponentLeft
 
 

@@ -14,7 +14,8 @@ def run():
 	atexit.register(connection.close)
 
 	try:
-		connection.setup_identification()
+		connection.assign_ids()
+		connection.name_exchange()
 		while True: #can only exit through exception throw
 			_run_battle(connection)
 	except OpponentLeft:
@@ -31,7 +32,7 @@ def _run_battle(connection):
 	"""
 	fleets = [
 		Fleet(ship_placements) for ship_placements in
-		connection.exchange_placements()
+		connection.exchange_placements()  #fleets come ordered by player id
 	]
 	while True:
 		for shooter_id in range(2):

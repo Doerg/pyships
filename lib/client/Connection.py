@@ -9,6 +9,10 @@ class Connection(BaseConnection):
     """
     connection interface used by the game client.
     """
+    def __init__(self):
+        self._player_id = None
+
+
     def establish(self, server_ip):
         """
         sets up message listener/sender objects for communication with the
@@ -26,7 +30,15 @@ class Connection(BaseConnection):
         return True
 
 
-    def setup_identification(self, player_name):
+    def obtain_player_id(self):
+        """
+        listens for an id message by the server and extracts the assigned id.
+        """
+        self._player_id = self._get_message().player_id
+        return self._player_id
+
+
+    def exchange_names(self, player_name):
         """
         tells the server the local player's name, receives the remote player's
         name in return.
@@ -34,16 +46,14 @@ class Connection(BaseConnection):
         :return: the name of the opponent
         """
         self._msg_sender.send(NameMessage(player_name))
-        answer = self._get_message()
-        self.player_id = answer.player_id
-        return answer.opponent_name.decode("utf-8") #arrived as bytestring
+        return self._get_message().player_name.decode('utf-8') #came as bytes
 
 
     def inform_exit(self):
         """
         informs the server that the local player terminated the program.
         """
-        self._msg_sender.send(ExitMessage(self.player_id))
+        self._msg_sender.send(ExitMessage(self._player_id))
 
 
     def send_placements(self, ship_placements):
@@ -51,7 +61,9 @@ class Connection(BaseConnection):
         sends the server the local player's ship placements.
         :param ship_placements: the local player's ship placements
         """
-        self._msg_sender.send(PlacementMessage(self.player_id, ship_placements))
+        self._msg_sender.send(
+            PlacementMessage(self._player_id, ship_placements)
+        )
 
 
     def acknowledge_opponent_placements(self):
@@ -87,7 +99,7 @@ class Connection(BaseConnection):
         """
         informs the opponent that the player wants a rematch.
         """
-        self._msg_sender.send(RematchMessage(self.player_id))
+        self._msg_sender.send(RematchMessage(self._player_id))
 
 
     def acknowledge_rematch_willingness(self):

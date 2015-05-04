@@ -2,14 +2,6 @@ from threading import Thread
 
 
 ### messages from client only ###
-class NameMessage(object):
-    """
-    tells the server the name of the local player.
-    """
-    def __init__(self, player_name):
-        self.player_name = player_name
-
-
 class ShotMessage(object):
     """
     tells the server the coordinates of the shot taken by the local player.
@@ -21,11 +13,9 @@ class ShotMessage(object):
 ### messages from server only ###
 class IDMessage(object):
     """
-    tells the client the id of the local player (chosen by the server)
-    and the name of the remote player.
+    tells the client the id of the local player (chosen by the server).
     """
-    def __init__(self, player_id, opponent_name):
-        self.opponent_name = opponent_name
+    def __init__(self, player_id):
         self.player_id = player_id
 
 
@@ -49,6 +39,16 @@ class ShutdownMessage(object):
 
 
 ### messages sent by server and client ###
+class NameMessage(object):
+    """
+    delivers the name of a player. can either be sent by the client to tell the
+    server the name of the local player, or it can be sent by the server to
+    tell a client the name of the opponent.
+    """
+    def __init__(self, player_name):
+        self.player_name = player_name
+
+
 class ExitMessage(object):
     """
     can either be sent by the client to tell the server that the local player

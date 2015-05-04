@@ -30,20 +30,21 @@ def _run_game(stdscr):
 
         TitleScreen.uninit()
         BattleScreen.init(player_name)
+        BattleScreen.message('Waiting for an opponent to connect...')
 
-        opponent_name = _handle_identification(connection, player_name)
-
-        player_starts = True if connection.player_id == 0 else False
+        player_starts = True if connection.obtain_player_id() == 0 else False
+        opponent_name = connection.exchange_names(player_name)
+        BattleScreen.introduce_opponent(opponent_name)
 
         while True:  #runs until Exception arrives
             _run_battle(connection, opponent_name, player_starts)
-            BattleScreen.reset_battle()
 
     except ConnectionAborted:  #raised by title screen
         return
-    except (ProgramExit, KeyboardInterrupt):
-        if connection:
-            connection.inform_exit()
+    except ProgramExit:
+        connection.inform_exit()
+    except KeyboardInterrupt:
+        if connection: connection.inform_exit()
     except ServerShutdown:
         BattleScreen.handle_exit('Server has shut down!')
     except OpponentLeft:
@@ -66,25 +67,10 @@ def _establish_connection():
                 raise ConnectionAborted
 
 
-def _handle_identification(connection, player_name):
-    """
-    tells the server the player's name. the server will then return the name
-    of the opponent, which will be introduced on the screen.
-    :param connection: the connection to the server
-    :param player_name: the name of the player
-    :return: the name of the opponent
-    """
-    if not connection.has_message():
-        BattleScreen.message('Waiting for an opponent to connect...')
-    opponent_name = connection.setup_identification(player_name)
-    BattleScreen.introduce_opponent(opponent_name)
-    return opponent_name
-
-
 def _run_battle(connection, opponent_name, player_starts):
     """
     runs one battle between two players. includes initial ship placements.
-    returns once a GameOver exception is thrown.
+    returns once an exception is thrown.
     :param connection: the connection to the server
     :param opponent_name: the name of the opponent
     :param player_starts: boolean indicating whether player is first to shoot
@@ -97,7 +83,8 @@ def _run_battle(connection, opponent_name, player_starts):
         while True: #can only exit through exception throw
             _opponent_shot(connection, opponent_name)
             _player_shot(connection, opponent_name)
-    except GameOver:
+    except PlayAgain:
+        BattleScreen.reset_battle()
         return
 
 
@@ -139,8 +126,8 @@ def _player_shot(connection, opponent_name):
     if shot_result.destroyed_ship:
         BattleScreen.reveal_ship(shot_result.destroyed_ship)
         if shot_result.game_over:
-            _ask_for_rematch(connection, opponent_name, True)
-            raise GameOver
+            _check_for_rematch(connection, opponent_name, True)
+            raise PlayAgain
         else:
             BattleScreen.message(
                 "You destroyed a ship of size %d! It's %s's turn now..." %
@@ -171,8 +158,8 @@ def _opponent_shot(connection, opponent_name):
 
     if shot_result.destroyed_ship:
         if shot_result.game_over:
-            _ask_for_rematch(connection, opponent_name, False)
-            raise GameOver
+            _check_for_rematch(connection, opponent_name, False)
+            raise PlayAgain
         else:
             BattleScreen.message(
                 '%s has destroyed one of your ships! Take revenge!' %
@@ -190,13 +177,14 @@ def _opponent_shot(connection, opponent_name):
             )
 
 
-def _ask_for_rematch(connection, opponent_name, player_won):
+def _check_for_rematch(connection, opponent_name, player_won):
     """
     asks the player whether he wants to play another game. if this is the case
     and the opponent also agrees to a rematch, this method simply returns. for
     other cases, an exception will be thrown.
     :param connection: the connection to the server
     :param opponent_name: the name of the opponent
+    :param player_won: True if the player won the last battle, False otherwise
     """
     if player_won:
         message = 'Congratulations! You win!'
