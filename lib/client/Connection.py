@@ -2,18 +2,12 @@ from multiprocessing.connection import Client, Listener
 from Messages import *
 from CustomExceptions import *
 from BaseConnection import BaseConnection
-import signal
 
 
 class Connection(BaseConnection):
     """
     connection interface used by the game client.
     """
-    def __init__(self):
-        super().__init__()
-        self._player_id = None
-
-
     def establish(self, server_ip):
         """
         sets up message listener/sender objects for communication with the
@@ -23,13 +17,12 @@ class Connection(BaseConnection):
         """
         with Listener(('', self._client_port)) as connection_listener:
             try:
-                with Connection.Timeout():
+                with BaseConnection.Timeout():
                     self._msg_sender = Client((server_ip, self._server_port))
             except:  #general b/c different things can go wrong
                 return False
             self._msg_listener = connection_listener.accept()
 
-        self.established = True
         return True
 
 
@@ -38,6 +31,7 @@ class Connection(BaseConnection):
         listens for an id message by the server and extracts the assigned id.
         """
         self._player_id = self._get_message().player_id
+        self.established = True  #considered established once id received
         return self._player_id
 
 
@@ -50,13 +44,6 @@ class Connection(BaseConnection):
         """
         self._msg_sender.send(NameMessage(player_name))
         return self._get_message().player_name.decode('utf-8') #came as bytes
-
-
-    def inform_exit(self):
-        """
-        informs the server that the local player terminated the program.
-        """
-        self._msg_sender.send(ExitMessage(self._player_id))
 
 
     def send_placements(self, ship_placements):
@@ -113,6 +100,13 @@ class Connection(BaseConnection):
         self._get_message()
 
 
+    def inform_exit(self):
+        """
+        informs the server that the local player terminated the program.
+        """
+        self._msg_sender.send(ExitMessage(self._player_id))
+
+
     def has_message(self):
         """
         returns whether there is a message from the server not read yet.
@@ -151,24 +145,3 @@ class Connection(BaseConnection):
             raise OpponentLeft
         if isinstance(message, ShutdownMessage):
             raise ServerShutdown
-
-
-    class Timeout:
-        """
-        context manager class usable via with-statement. can limit the execution
-        of the statement body a certain amount of seconds. raises a TimeoutError
-        if the execution of the body has not been able to complete during the
-        given timeframe.
-        """
-        def __init__(self, seconds=1):
-            self._seconds = seconds
-
-        def _handle_timeout(self, signum, frame):
-            raise Connection.TimeoutError()
-
-        def __enter__(self):
-            signal.signal(signal.SIGALRM, self._handle_timeout)
-            signal.alarm(self._seconds)
-
-        def __exit__(self, type, value, traceback):
-            signal.alarm(0)

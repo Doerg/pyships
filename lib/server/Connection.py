@@ -20,13 +20,53 @@ class Connection(BaseConnection):
 
         with Listener(('', self._server_port)) as connection_listener:
             logging.info('listening for connections...')
-            for _ in range(2):
-                self._msg_listeners.append(connection_listener.accept())
-                client_ip = connection_listener.last_accepted[0]
-                self._msg_senders.append(Client((client_ip, self._client_port)))
-                logging.info('client with ip %s logged on' % client_ip)
+            self._first_client_connection(connection_listener)
+            self._second_client_connection(connection_listener)
 
         self.established = True
+
+
+    def _first_client_connection(self, connection_listener):
+        """
+        listens for the first client connection and sets up a message sender
+        once the connection has been registered.
+        :param connection_listener: the connection listener
+        """
+        self._msg_listeners.append(connection_listener.accept())
+        self._setup_msg_sender(connection_listener)
+
+
+    def _second_client_connection(self, connection_listener):
+        """
+        listens for the second client connection and sets up a message sender
+        once the connection has been registered. as a special case, this method
+        has to periodically query whether the first player terminated his
+        connection while waiting for the second player to connect. if that is
+        the case, connection establishment is aborted.
+        :param connection_listener: the connection listener
+        """
+        while True:
+            try:
+                with BaseConnection.Timeout():
+                    self._msg_listeners.append(connection_listener.accept())
+                    self._setup_msg_sender(connection_listener)
+                    return
+            except TimeoutError:
+                pass
+            if self._msg_listeners[0].poll(): #true if first client terminated
+                logging.info('client left again')
+                raise OpponentLeft
+
+
+    def _setup_msg_sender(self, connection_listener):
+        """
+        sets up a message sender to the player that previously connected to the
+        server.
+        :param connection_listener: the connection listener
+        """
+        client_ip = connection_listener.last_accepted[0]
+        self._msg_senders.append(Client((client_ip, self._client_port)))
+        logging.info('client with ip %s logged on' % client_ip)
 
 
     def assign_ids(self):
@@ -178,10 +218,9 @@ class Connection(BaseConnection):
         :param message: the message to be checked
         """
         if isinstance(message, ExitMessage):
-            if message.player_id != None:
-                other_id = self._other_player_id(message.player_id)
-                self._msg_senders[other_id].send(ExitMessage())
-                logging.info('player %d left the game' % message.player_id)
+            other_id = self._other_player_id(message.player_id)
+            self._msg_senders[other_id].send(ExitMessage())
+            logging.info('player %d left the game' % message.player_id)
             raise OpponentLeft
 
 
