@@ -21,10 +21,10 @@ def _run_game(stdscr):
     UIData.init_colors()
     TitleScreen.init()
 
-    connection = None
+    connection = Connection()
 
     try:
-        connection, player_name = _establish_connection()
+        player_name = _establish_connection(connection)
 
         atexit.register(connection.close)
 
@@ -44,24 +44,24 @@ def _run_game(stdscr):
     except ProgramExit:
         connection.inform_exit()
     except KeyboardInterrupt:
-        if connection: connection.inform_exit()
+        if connection.established: connection.inform_exit()
     except ServerShutdown:
         BattleScreen.handle_exit('Server has shut down!')
     except OpponentLeft:
         BattleScreen.handle_exit('%s has left the game!' % opponent_name)
 
 
-def _establish_connection():
+def _establish_connection(connection):
     """
-    sets up a connection, requiring user input from the title screen.
-    :return: the connection to the server
+    establishes a connection to the server, requiring user input from the
+    title screen.
+    :param connection: the connection to the server, not established yet
+    :return: the name of the player
     """
-    connection = Connection()
-
     while True:
         player_name, host_ip = TitleScreen.ask_logon_data()
         if connection.establish(host_ip):
-            return connection, player_name
+            return player_name
         else:
             if not TitleScreen.ask_connection_retry():
                 raise ConnectionAborted

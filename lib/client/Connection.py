@@ -10,6 +10,7 @@ class Connection(BaseConnection):
     connection interface used by the game client.
     """
     def __init__(self):
+        super().__init__()
         self._player_id = None
 
 
@@ -27,6 +28,8 @@ class Connection(BaseConnection):
             except:  #general b/c different things can go wrong
                 return False
             self._msg_listener = connection_listener.accept()
+
+        self.established = True
         return True
 
 

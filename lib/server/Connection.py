@@ -26,6 +26,8 @@ class Connection(BaseConnection):
                 self._msg_senders.append(Client((client_ip, self._client_port)))
                 logging.info('client with ip %s logged on' % client_ip)
 
+        self.established = True
+
 
     def assign_ids(self):
         """
@@ -125,7 +127,6 @@ class Connection(BaseConnection):
         """
         closes all message senders and listeners.
         """
-        logging.info('shutting down')
         for connection in self._msg_senders + self._msg_listeners:
             connection.close()
 

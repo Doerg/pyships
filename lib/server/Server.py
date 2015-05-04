@@ -1,27 +1,46 @@
 from CustomExceptions import *
 from .Connection import Connection
 from .Fleet import Fleet
+import logging
 import atexit
 
 
 def run():
 	"""
-    top level server logic.
+	server entry method. loops game sessions until the server is shut down.
+	one game session consists of the same two players playing one or multiple
+	matches.
+	"""
+	atexit.register(logging.info, 'shutting down')
+
+	while _run_session():
+		logging.info('resetting session')
+
+
+def _run_session():
+	"""
+    top level game session logic. one game session can consist of multiple
+    matches between the same two players. this method only exits through an
+    exception, thrown by a subroutine and evaluated by an except clause.
+    :return: False if server was closed by keyboard interrupt, True otherwise
 	"""
 	connection = Connection()
-	connection.establish()
-
-	atexit.register(connection.close)
 
 	try:
+		connection.establish()
 		connection.assign_ids()
 		connection.name_exchange()
 		while True: #can only exit through exception throw
 			_run_battle(connection)
+
 	except OpponentLeft:
-		return
+		connection.close()
+		return True
 	except KeyboardInterrupt:
-		connection.inform_shutdown()
+		if connection.established:
+			connection.inform_shutdown()
+			connection.close()
+		return False
 
 
 def _run_battle(connection):
