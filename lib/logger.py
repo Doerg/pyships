@@ -1,7 +1,7 @@
 import logging
 
 LOG_LEVELS = ('CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET')
-LOG_FORMAT = "%(levelname)s::%(asctime)s::%(threadName)s::" + \
+LOG_FORMAT = "%(levelname)s::%(asctime)s::" + \
              "%(filename)s:%(lineno)d:: %(msg)s"
 
 
