@@ -17,9 +17,9 @@ class BaseConnection(object):
     class Timeout:
         """
         context manager class usable via with-statement. can limit the execution
-        of the statement body a certain amount of seconds. raises a TimeoutError
-        if the execution of the body has not been able to complete during the
-        given timeframe.
+        of the statement body to a certain amount of seconds. raises a
+        TimeoutError if the execution of the body has not been able to complete
+        during the given time frame.
         """
         def __init__(self, seconds=1):
             self._seconds = seconds

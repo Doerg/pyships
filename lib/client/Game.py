@@ -34,20 +34,22 @@ def _run_game(stdscr):
 
         player_starts = True if connection.obtain_player_id() == 0 else False
         opponent_name = connection.exchange_names(player_name)
+
+        BattleScreen.show_ship_placement_keys()
         BattleScreen.introduce_opponent(opponent_name)
 
         while True:  #runs until Exception arrives
             _run_battle(connection, opponent_name, player_starts)
 
-    except ConnectionAborted:  #raised by title screen
+    except ConnectionAborted:   #player left the title screen
         return
-    except ProgramExit:
+    except ProgramExit:         #only raised after connection established
         connection.inform_exit()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt:   #can happen anytime
         if connection.established: connection.inform_exit()
-    except ServerShutdown:
+    except ServerShutdown:      #server got killed
         BattleScreen.handle_exit('Server has shut down!')
-    except OpponentLeft:
+    except OpponentLeft:        #remote player quit
         BattleScreen.handle_exit('%s has left the game!' % opponent_name)
 
 
@@ -70,7 +72,7 @@ def _establish_connection(connection):
 def _run_battle(connection, opponent_name, player_starts):
     """
     runs one battle between two players. includes initial ship placements.
-    returns once an exception is thrown.
+    only returns once an exception is thrown.
     :param connection: the connection to the server
     :param opponent_name: the name of the opponent
     :param player_starts: boolean indicating whether player is first to shoot
@@ -195,7 +197,8 @@ def _check_for_rematch(connection, opponent_name, player_won):
         connection.inform_rematch_willingness()
         if not connection.has_message():
             BattleScreen.message(
-                'Waiting for the decision of %s to play again.' % opponent_name
+                'Waiting for the decision of %s to play again...' %
+                opponent_name
             )
         connection.acknowledge_rematch_willingness()
         BattleScreen.message(

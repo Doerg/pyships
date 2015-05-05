@@ -49,8 +49,6 @@ class KeyLegend(InfoBar):
         self._win.bkgd(' ', UIData.colors['legend'])
         self._win.bkgdset(' ', curses.A_BOLD)
 
-        self.set_ship_placement_keys()
-
 
     def set_ship_placement_keys(self):
         """

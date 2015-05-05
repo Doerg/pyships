@@ -98,6 +98,14 @@ def _position_ship(ship):
     return ship.coords  # server will only need coords
 
 
+def show_ship_placement_keys():
+    """
+    displays the ship placement key legend.
+    """
+    _key_legend.set_ship_placement_keys()
+    _key_legend.update()
+
+
 def show_battle_keys():
     """
     replaces the ship placement key legend with the battle mode key legend.
