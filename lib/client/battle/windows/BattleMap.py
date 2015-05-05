@@ -218,12 +218,14 @@ class OpponentMap(BattleMap):
         return [logical_y, logical_x]
 
 
-    def reveal_ship(self, ship):
+    def reveal_ship(self, ship, is_destroyed):
         """
-        draws a destroyed ship on the opponent's map.
-        :param ship: the destroyed ship of the opponent
+        draws a ship on the opponent's map.
+        :param ship: the ship of the opponent to reveal
+        :param is_destroyed: True if the ship is destroyed, False otherwise
         """
-        self._draw_ship(ship, UIData.colors['hit'])
+        color = UIData.colors['hit'] if is_destroyed else UIData.colors['ship']
+        self._draw_ship(ship, color)
 
 
     def display_shot(self, coord, is_hit):

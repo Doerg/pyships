@@ -124,6 +124,19 @@ class Connection(BaseConnection):
         )
 
 
+    def send_intact_ships(self, loser_id, winning_fleet):
+        """
+        sends the loser of the last battle all the coordinates of the winner's
+        ships that are still intact.
+        :param loser_id: the id of the player that lost the last battle
+        :param winning_fleet: the fleet that still has intact ships
+        """
+        ship_coords = [
+            ship.full_coords for ship in winning_fleet.intact_ships
+        ]
+        self._msg_senders[loser_id].send(PlacementMessage(coords=ship_coords))
+
+
     def exchange_rematch_willingness(self):
         """
         waits for a rematch message by each player. once a message arrives, the

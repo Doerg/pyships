@@ -85,6 +85,14 @@ class Connection(BaseConnection):
         return self._get_message()
 
 
+    def enemy_intact_ships(self):
+        """
+        returns the ships of the opponent that are still intact after game end.
+        :return: the coordinates of the opponent's intact ships
+        """
+        return self._get_message().coords
+
+
     def inform_rematch_willingness(self):
         """
         informs the opponent that the player wants a rematch.

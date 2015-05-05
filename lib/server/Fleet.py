@@ -1,7 +1,7 @@
 class Fleet(object):
 
     def __init__(self, ships_coords):
-        self._intact_ships = [self.Ship(coords) for coords in ships_coords]
+        self.intact_ships = [self.Ship(coords) for coords in ships_coords]
 
 
     def receive_shot(self, coords):
@@ -14,10 +14,10 @@ class Fleet(object):
         """
         self.destroyed_ship = None
 
-        for ship in self._intact_ships:
+        for ship in self.intact_ships:
             if ship.is_hit(coords):
                 if ship.destroyed:
-                    self._intact_ships.remove(ship)
+                    self.intact_ships.remove(ship)
                     self.destroyed_ship = ship.full_coords
                 return True
 
@@ -31,7 +31,7 @@ class Fleet(object):
         left.
         :return: True when all ships are destroyed, False otherwise
         """
-        return len(self._intact_ships) == 0
+        return len(self.intact_ships) == 0
 
 
     class Ship(object): #inner class

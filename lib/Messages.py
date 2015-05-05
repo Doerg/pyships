@@ -64,7 +64,9 @@ class PlacementMessage(object):
     """
     can either be sent by the client to tell the server the local player's
     ship placements, or it can be sent by the server to tell a client that
-    the remote player finished ship placements.
+    the remote player finished ship placements. the server can also use this
+    message to tell a client which ships of the opponent the player didn't
+    manage to destroy (after the player lost the game).
     """
     def __init__(self, player_id=None, coords=None):
         if player_id != None:

@@ -114,13 +114,23 @@ def show_battle_keys():
     _key_legend.update()
 
 
-def reveal_ship(coords):
+def reveal_intact_ships(ship_coords):
     """
-    reveals a destroyed ship of the opponent.
-    :param coords: coordinates of the destroyed ship
+    reveals the ships of the opponent that the player did not manage to destroy.
+    :param ship_coords: the coordinates of all intact ships of the opponent
+    """
+    for coords in ship_coords:
+        reveal_ship(coords, False)
+
+
+def reveal_ship(coords, is_destroyed):
+    """
+    reveals a ship of the opponent.
+    :param coords: coordinates of the ship to reveal
+    :param is_destroyed: True if the ship is destroyed, False otherwise
     """
     ship = Ship(len(coords), coords=coords)
-    _opponent_map.reveal_ship(ship)
+    _opponent_map.reveal_ship(ship, is_destroyed)
     _opponent_map.update()
 
 

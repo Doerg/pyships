@@ -55,28 +55,32 @@ def _run_battle(connection):
 	]
 	while True:
 		for shooter_id in range(2):
-			receiving_fleet = fleets[abs(shooter_id - 1)]
-			if _handle_shot(shooter_id, receiving_fleet, connection):
+			if _handle_shot(shooter_id, fleets, connection):
 				connection.exchange_rematch_willingness()
 				return
 
 
-def _handle_shot(shooter_id, receiving_fleet, connection):
+def _handle_shot(shooter_id, fleets, connection):
 	"""
 	waits for a player to shoot, gathers the shot result and informs both
 	players about the result.
 	:param shooter_id: the id of the player to shoot
-	:param receiving_fleet: the fleet that will receive the shot
+	:param fleets: the fleets of the players
 	:param connection: the network connection to both players
 	:return: True if the shot ended the game, False otherwise
 	"""
+	other_id = abs(shooter_id - 1)
+
 	shot_coords = connection.receive_shot(shooter_id)
-	is_hit = receiving_fleet.receive_shot(shot_coords)
-	destroyed_ship = receiving_fleet.destroyed_ship #might be None
-	game_over = receiving_fleet.destroyed
+	is_hit = fleets[other_id].receive_shot(shot_coords)
+	destroyed_ship = fleets[other_id].destroyed_ship #might be None
+	game_over = fleets[other_id].destroyed
 
 	connection.inform_shot_result(
 		shot_coords, is_hit, game_over, destroyed_ship
 	)
+
+	if game_over:
+		connection.send_intact_ships(other_id, fleets[shooter_id])
 
 	return game_over

@@ -126,7 +126,7 @@ def _player_shot(connection, opponent_name):
     shot_result = connection.deliver_shot(shot_coords)
 
     if shot_result.destroyed_ship:
-        BattleScreen.reveal_ship(shot_result.destroyed_ship)
+        BattleScreen.reveal_ship(shot_result.destroyed_ship, True)
         if shot_result.game_over:
             _check_for_rematch(connection, opponent_name, True)
             raise PlayAgain
@@ -160,6 +160,7 @@ def _opponent_shot(connection, opponent_name):
 
     if shot_result.destroyed_ship:
         if shot_result.game_over:
+            BattleScreen.reveal_intact_ships(connection.enemy_intact_ships())
             _check_for_rematch(connection, opponent_name, False)
             raise PlayAgain
         else:
