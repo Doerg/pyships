@@ -117,6 +117,9 @@ class Connection(BaseConnection):
         :param destroyed_ship: if a ship was destroyed by the shot, this will
         contain the ship's coordinates. otherwise it will be None
         """
+        logging.info('shot was a %s' % ('hit' if is_hit else 'miss'))
+        if destroyed_ship:
+            logging.info('ship of size %d destroyed' % len(destroyed_ship))
         if game_over:
             logging.info('game over')
         self._send_all(
