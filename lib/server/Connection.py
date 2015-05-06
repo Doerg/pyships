@@ -11,12 +11,10 @@ class Connection(BaseConnection):
     """
     def establish(self):
         """
-        listens for two connections and sets up a message listener and message
-        sender for each connection. the listeners and senders will be ordered
-        by id.
+        listens for two connections and sets up a connection object for each
+        client. these connection objects will be ordered by client id.
         """
-        self._msg_listeners = []
-        self._msg_senders = []
+        self._connections = []
 
         with Listener(('', self._server_port)) as connection_listener:
             logging.info('listening for connections...')
@@ -30,7 +28,7 @@ class Connection(BaseConnection):
                         break
                 except TimeoutError:
                     pass
-                if self._msg_listeners[0].poll(): #true if 1st client terminated
+                if self._connections[0].poll(): #true if 1st client terminated
                     logging.info('client left again')
                     raise OpponentLeft
 
@@ -39,14 +37,14 @@ class Connection(BaseConnection):
 
     def _setup_connection(self, connection_listener):
         """
-        listens for a client to connect to the server and sets up a message
-        listener and sender to that client once connected.
+        listens for a client to connect to the server and sets up a connection
+        object for that client once it connected.
         :param connection_listener: the connection listener
         """
-        self._msg_listeners.append(connection_listener.accept())
-        client_ip = connection_listener.last_accepted[0]
-        self._msg_senders.append(Client((client_ip, self._client_port)))
-        logging.info('client with ip %s logged on' % client_ip)
+        self._connections.append(connection_listener.accept())
+        logging.info(
+            'client with ip %s logged on' % connection_listener.last_accepted[0]
+        )
 
 
     def assign_ids(self):
@@ -54,7 +52,7 @@ class Connection(BaseConnection):
         assigns each player his id.
         """
         for player_id in range(2):
-            self._msg_senders[player_id].send(IDMessage(player_id))
+            self._connections[player_id].send(IDMessage(player_id))
 
 
     def name_exchange(self):
@@ -65,7 +63,7 @@ class Connection(BaseConnection):
         for player_id in range(2):
             other_id = self._other_player_id(player_id)
             name_msg = self._get_message(player_id)
-            self._msg_senders[other_id].send(name_msg)
+            self._connections[other_id].send(name_msg)
             logging.info(
                 "player '%s' received id %d" %
                 (name_msg.player_name.decode('utf-8'), player_id)
@@ -85,7 +83,7 @@ class Connection(BaseConnection):
             msg = self._get_message()
             ship_placements[msg.player_id] = msg.coords
             other_id = self._other_player_id(msg.player_id)
-            self._msg_senders[other_id].send(PlacementMessage())
+            self._connections[other_id].send(PlacementMessage())
             logging.info(
                 'player %d placed the following ships: %s' %
                 (msg.player_id, msg.coords)
@@ -137,7 +135,7 @@ class Connection(BaseConnection):
         ship_coords = [
             ship.full_coords for ship in winning_fleet.intact_ships
         ]
-        self._msg_senders[loser_id].send(PlacementMessage(coords=ship_coords))
+        self._connections[loser_id].send(PlacementMessage(coords=ship_coords))
 
 
     def exchange_rematch_willingness(self):
@@ -149,7 +147,7 @@ class Connection(BaseConnection):
             msg = self._get_message()
             logging.info('player %d agrees to a rematch' % msg.player_id)
             other_id = self._other_player_id(msg.player_id)
-            self._msg_senders[other_id].send(RematchMessage())
+            self._connections[other_id].send(RematchMessage())
 
 
     def inform_shutdown(self):
@@ -163,7 +161,7 @@ class Connection(BaseConnection):
         """
         closes all message senders and listeners.
         """
-        for connection in self._msg_senders + self._msg_listeners:
+        for connection in self._connections:
             connection.close()
 
 
@@ -172,36 +170,34 @@ class Connection(BaseConnection):
         sends the given message to both players.
         :param message: the message to be sent
         """
-        for sender in self._msg_senders:
-            sender.send(message)
+        for connection in self._connections:
+            connection.send(message)
 
 
     def _get_message(self, player_id=None):
         """
-        if player_id is given, will return the oldest message in the player's
-        message listener. if no player_id is given, it will return the oldest
-        message of either listener.
+        if player_id is given, will return the oldest message from that player's
+        connection. if no player_id is given, it will return the oldest
+        message of either player's connection.
         :param player_id: the id of the player to get the message from
         :return: the oldest message of a particular player
         """
         if player_id != None:
-            return self._read_message(self._msg_listeners[player_id])
+            return self._read_message(self._connections[player_id])
         else:
             while True:
                 for player_id in range(2):
-                    if self._msg_listeners[player_id].poll():
-                        return self._read_message(
-                            self._msg_listeners[player_id]
-                        )
+                    if self._connections[player_id].poll():
+                        return self._read_message(self._connections[player_id])
 
 
-    def _read_message(self, msg_listener):
+    def _read_message(self, connection):
         """
-        returns a message read from the given message listener.
-        :param msg_listener: the listener to read the message from
-        :return: the oldest message of this listener
+        returns a message read from the given client connection.
+        :param connection: the client connection to read the message from
+        :return: the oldest message of the client connection
         """
-        message = msg_listener.recv()
+        message = connection.recv()
         self._abortion_check(message) #message might signal player exit
         return message
 
@@ -215,7 +211,7 @@ class Connection(BaseConnection):
         """
         if isinstance(message, ExitMessage):
             other_id = self._other_player_id(message.player_id)
-            self._msg_senders[other_id].send(ExitMessage())
+            self._connections[other_id].send(ExitMessage())
             logging.info('player %d left the game' % message.player_id)
             raise OpponentLeft
 
