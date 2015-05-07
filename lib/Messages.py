@@ -1,6 +1,3 @@
-from threading import Thread
-
-
 ### messages from client only ###
 class ShotMessage(object):
     """

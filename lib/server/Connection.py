@@ -1,4 +1,4 @@
-from multiprocessing.connection import Client, Listener
+from multiprocessing.connection import Listener
 from Messages import *
 from CustomExceptions import *
 from BaseConnection import BaseConnection

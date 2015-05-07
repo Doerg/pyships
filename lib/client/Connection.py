@@ -1,4 +1,4 @@
-from multiprocessing.connection import Client, Listener
+from multiprocessing.connection import Client
 from Messages import *
 from CustomExceptions import *
 from BaseConnection import BaseConnection
@@ -14,12 +14,11 @@ class Connection(BaseConnection):
         :param server_ip: the ip of the server
         :return: True is the connection could be established, False otherwise
         """
-        with Listener(('', self._client_port)) as connection_listener:
-            try:
-                with BaseConnection.Timeout():
-                    self._connection = Client((server_ip, self._server_port))
-            except:  #general b/c different things can go wrong
-                return False
+        try:
+            with BaseConnection.Timeout():
+                self._connection = Client((server_ip, self._server_port))
+        except:  #general b/c different things can go wrong
+            return False
 
         return True
 
