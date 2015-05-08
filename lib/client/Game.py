@@ -1,7 +1,8 @@
-import curses
 from .Connection import Connection
-from CustomExceptions import *
 from . import UIData, TitleScreen, BattleScreen
+from CustomExceptions import *
+import curses
+import atexit
 
 
 def run():
@@ -20,63 +21,73 @@ def _run_game(stdscr):
     UIData.init_colors()
     TitleScreen.init()
 
+    connection = Connection()
+
     try:
-        connection, player_name = _establish_connection()
+        player_name = _establish_connection(connection)
+
+        atexit.register(connection.close)
 
         TitleScreen.uninit()
         BattleScreen.init(player_name)
+        BattleScreen.message('Waiting for an opponent to connect...')
 
-        opponent_name = _handle_identification(connection, player_name)
+        player_starts = True if connection.obtain_player_id() == 0 else False
+        opponent_name = connection.exchange_names(player_name)
 
-        player_starts = True if connection.player_id == 0 else False
+        BattleScreen.show_ship_placement_keys()
+        BattleScreen.introduce_opponent(opponent_name)
 
-        _handle_ship_placements(connection, opponent_name, player_starts)
+        while True:  #runs until Exception arrives
+            _run_battle(connection, opponent_name, player_starts)
 
-        if player_starts:
-            _player_shot(connection, opponent_name)
-        while True: #can only exit through exception throw
-            _opponent_shot(connection, opponent_name)
-            _player_shot(connection, opponent_name)
-
-    except (ConnectionAborted, GameOver):
+    except ConnectionAborted:   #player left the title screen
         return
-    except ProgramExit:
+    except ProgramExit:         #only raised after connection established
         connection.inform_exit()
-    except ServerShutdown:
+    except KeyboardInterrupt:   #can happen anytime
+        if connection.established: connection.inform_exit()
+    except ServerShutdown:      #server got killed
         BattleScreen.handle_exit('Server has shut down!')
-    except OpponentLeft:
+    except OpponentLeft:        #remote player quit
         BattleScreen.handle_exit('%s has left the game!' % opponent_name)
 
 
-def _establish_connection():
+def _establish_connection(connection):
     """
-    sets up a connection, requiring user input from the title screen.
-    :return: the connection to the server
+    establishes a connection to the server, requiring user input from the
+    title screen.
+    :param connection: the connection to the server, not established yet
+    :return: the name of the player
     """
-    connection = Connection()
-
     while True:
         player_name, host_ip = TitleScreen.ask_logon_data()
         if connection.establish(host_ip):
-            return connection, player_name
+            return player_name
         else:
             if not TitleScreen.ask_connection_retry():
                 raise ConnectionAborted
 
 
-def _handle_identification(connection, player_name):
+def _run_battle(connection, opponent_name, player_starts):
     """
-    tells the server the player's name. the server will then return the name
-    of the opponent, which will be introduced on the screen.
+    runs one battle between two players. includes initial ship placements.
+    only returns once an exception is thrown.
     :param connection: the connection to the server
-    :param player_name: the name of the player
-    :return: the name of the opponent
+    :param opponent_name: the name of the opponent
+    :param player_starts: boolean indicating whether player is first to shoot
     """
-    if not connection.has_message():
-        BattleScreen.message('Waiting for an opponent to connect...')
-    opponent_name = connection.setup_identification(player_name)
-    BattleScreen.introduce_opponent(opponent_name)
-    return opponent_name
+    _handle_ship_placements(connection, opponent_name, player_starts)
+
+    try:
+        if player_starts:
+            _player_shot(connection, opponent_name)
+        while True: #can only exit through exception throw
+            _opponent_shot(connection, opponent_name)
+            _player_shot(connection, opponent_name)
+    except PlayAgain:
+        BattleScreen.reset_battle()
+        return
 
 
 def _handle_ship_placements(connection, opponent_name, player_starts):
@@ -87,7 +98,8 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     :param opponent_name: the name of the opponent
     :param player_starts: boolean indicating whether player is first to shoot
     """
-    ship_placements = BattleScreen.player_ship_placements()
+    ships = (5, 4, 4, 3, 3, 3, 2, 2, 2, 2)
+    ship_placements = BattleScreen.player_ship_placements(ships)
     connection.send_placements(ship_placements)
     BattleScreen.show_battle_keys()
 
@@ -99,10 +111,9 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     connection.acknowledge_opponent_placements()
     message = '%s has finished ship placement. ' % opponent_name
     if player_starts:
-        message += 'Please take your first shot.'
+        BattleScreen.message(message + 'Please take your first shot.')
     else:
-        message += 'Please wait for the first enemy shot.'
-    BattleScreen.message(message)
+        BattleScreen.message(message + 'Please wait for the first enemy shot.')
 
 
 def _player_shot(connection, opponent_name):
@@ -111,22 +122,22 @@ def _player_shot(connection, opponent_name):
     :param connection: the connection to the server
     :param opponent_name: the name of the opponent
     """
-    shot_coordinates = BattleScreen.let_player_shoot()
-    shot_result = connection.deliver_shot(shot_coordinates)
+    shot_coords = BattleScreen.let_player_shoot()
+    shot_result = connection.deliver_shot(shot_coords)
 
-    if shot_result.ship_destroyed:
-        BattleScreen.reveal_ship(shot_result.coordinates)
+    if shot_result.destroyed_ship:
+        BattleScreen.reveal_ship(shot_result.destroyed_ship, True)
         if shot_result.game_over:
-            BattleScreen.handle_exit('Congratulations! You win!')
-            raise GameOver
+            _check_for_rematch(connection, opponent_name, True)
+            raise PlayAgain
         else:
             BattleScreen.message(
                 "You destroyed a ship of size %d! It's %s's turn now..." %
-                (len(shot_result.coordinates), opponent_name)
+                (len(shot_result.destroyed_ship), opponent_name)
             )
     else:
         BattleScreen.show_shot(
-            shot_coordinates, shot_result.is_hit, opponent=True
+            shot_coords, shot_result.is_hit, opponent=True
         )
         if shot_result.is_hit:
             BattleScreen.message(
@@ -140,19 +151,18 @@ def _player_shot(connection, opponent_name):
 
 def _opponent_shot(connection, opponent_name):
     """
-    display the result of the opponent's shot.
+    displays the result of the opponent's shot.
     :param connection: the connection to the server
     :param opponent_name: the name of the opponent
     """
     shot_result = connection.receive_shot()
-    BattleScreen.show_shot(shot_result.coordinates, shot_result.is_hit)
+    BattleScreen.show_shot(shot_result.coords, shot_result.is_hit)
 
-    if shot_result.ship_destroyed:
+    if shot_result.destroyed_ship:
         if shot_result.game_over:
-            BattleScreen.handle_exit(
-                '%s has destroyed your fleet! You lose!' % opponent_name
-            )
-            raise GameOver
+            BattleScreen.reveal_intact_ships(connection.enemy_intact_ships())
+            _check_for_rematch(connection, opponent_name, False)
+            raise PlayAgain
         else:
             BattleScreen.message(
                 '%s has destroyed one of your ships! Take revenge!' %
@@ -168,3 +178,33 @@ def _opponent_shot(connection, opponent_name):
                 "%s missed! Time to show %s how it's done!" %
                 (opponent_name, opponent_name)
             )
+
+
+def _check_for_rematch(connection, opponent_name, player_won):
+    """
+    asks the player whether he wants to play another game. if this is the case
+    and the opponent also agrees to a rematch, this method simply returns. for
+    other cases, an exception will be thrown.
+    :param connection: the connection to the server
+    :param opponent_name: the name of the opponent
+    :param player_won: True if the player won the last battle, False otherwise
+    """
+    if player_won:
+        message = 'Congratulations! You win!'
+    else:
+        message = '%s has destroyed your fleet! You lose!' % opponent_name
+
+    if BattleScreen.ask_for_another_battle(message):
+        connection.inform_rematch_willingness()
+        if not connection.has_message():
+            BattleScreen.message(
+                'Waiting for the decision of %s to play again...' %
+                opponent_name
+            )
+        connection.acknowledge_rematch_willingness()
+        BattleScreen.message(
+            "%s agreed to another battle! Please place your ships." %
+            opponent_name
+        )
+    else:
+        raise ProgramExit

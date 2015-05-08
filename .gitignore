@@ -2,6 +2,7 @@
 *.sublime-workspace
 *.pyc
 *__pycache__
+*.log
 *.swp
 *~
 .idea

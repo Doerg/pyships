@@ -1,35 +1,43 @@
+### used only by client ###
 class ProgramExit(Exception):
     """
     signal program termination by local user.
     """
     pass
 
-class OpponentLeft(Exception):
+
+class PlayAgain(Exception):
     """
-    signal program termination by remote user.
+    signal that both players want a rematch.
     """
     pass
 
+
+class ConnectionAborted(Exception):
+    """
+    signal that player canceled connection and exited from title screen.
+    """
+    pass
+
+
+class TimeoutError(Exception):
+    """
+    signal that the connection to the server timed out.
+    """
+    pass
+
+
+### used only by server ###
 class ServerShutdown(Exception):
     """
     signal shutdown of pyships server.
     """
     pass
 
-class ConnectionAborted(Exception):
-    """
-    signal that player canceled connection and exits from title screen.
-    """
-    pass
 
-class GameOver(Exception):
+### used by server and client ###
+class OpponentLeft(Exception):
     """
-    signal that one of the two players won.
-    """
-    pass
-
-class TimeoutError(Exception):
-    """
-    signal that the connection to the server timed out.
+    signal program termination by the remote user.
     """
     pass

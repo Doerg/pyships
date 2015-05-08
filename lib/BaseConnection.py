@@ -1,52 +1,35 @@
-from queue import Queue
-from threading import Thread
+from CustomExceptions import TimeoutError
+import signal
 
 
 class BaseConnection(object):
     """
-    common connection interface used by both the game client and the server.
+    common connection class to be inherited from both client and server
+    connections.
     """
     _server_port = 12346    #ports for listeners
     _client_port = 12345
 
     def __init__(self):
-        self._msg_queue = Queue()
+        self.established = False
 
 
-    def has_message(self):
+    class Timeout:
         """
-        returns whether a message is available in the queue.
-        :return: True when message is available in the queue, False otherwise
+        context manager class usable via with-statement. can limit the execution
+        of the statement body to a certain amount of seconds. raises a
+        TimeoutError if the execution of the body has not been able to complete
+        during the given time frame.
         """
-        return not self._msg_queue.empty()
+        def __init__(self, seconds=1):
+            self._seconds = seconds
 
+        def _handle_timeout(self, signum, frame):
+            raise TimeoutError
 
-    def _get_message(self):
-        """
-        returns the oldest message in the message queue. blocks until a
-        message is available.
-        :return: the oldest message in the message queue
-        """
-        msg = self._msg_queue.get()
-        self._msg_queue.task_done()
-        self._abortion_check(msg) #each message might signal some sort of exit
-        return msg
+        def __enter__(self):
+            signal.signal(signal.SIGALRM, self._handle_timeout)
+            signal.alarm(self._seconds)
 
-
-    class MessageListener(Thread):
-        """
-        daemon thread that puts all incoming messages into a message queue.
-        """
-        def __init__(self, msg_queue, connection):
-            Thread.__init__(self)
-            self.daemon = True  # causes thread to exit once main thread exits
-            self._msg_queue = msg_queue
-            self._connection = connection
-
-        def run(self):
-            while True:
-                msg = self._connection.recv()
-                self._msg_queue.put(msg)
-                for msg_type in (self._termination_messages):
-                    self._connection.close()
-                    return
+        def __exit__(self, type, value, traceback):
+            signal.alarm(0)

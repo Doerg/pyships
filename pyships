@@ -3,6 +3,7 @@
 from sys import path
 path.append('lib')  #add lib folder to module search path
 from argparse import ArgumentParser
+from logger import setup_logging, LOG_LEVELS
 import logging
 
 if __name__ == "__main__":
@@ -11,14 +12,25 @@ if __name__ == "__main__":
         '-s', '--server', action='store_true',
         help='start a pyships server'
     )
+
+    parser.add_argument(
+        '-l', '--loglevel', dest='lvl', choices=LOG_LEVELS, default='INFO',
+        type=str.upper, help='set log level (default is INFO)'
+    )
+
+    parser.add_argument(
+        '-o', '--output', dest='path', type=str, help='set log file path'
+    )
+
     args = parser.parse_args()
 
-    #TODO set logging level via args
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(filename)s:%(funcName)s:%(message)s")
+    setup_logging(args.server, args.lvl, args.path)
 
     if args.server:
         from server import Server
+        logging.debug('starting server')
         Server.run()
     else:
         from client import Game
+        logging.debug('starting client')
         Game.run()

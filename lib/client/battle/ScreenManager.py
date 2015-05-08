@@ -35,9 +35,10 @@ def introduce_opponent(opponent_name):
     message("Your opponent is '%s'! Please place your ships." % opponent_name)
 
 
-def player_ship_placements():
+def player_ship_placements(ships):
     """
     lets the player position his ships.
+    :param ships: the ships to be placed, represented by integers (their size)
     :return: the coordinates of all placed ships
     """
     map_size = UIData.battle['map']['logical size']
@@ -47,7 +48,6 @@ def player_ship_placements():
 
     Ship.setup_class_vars(the_map, map_size)
 
-    ships = (5, 4, 4, 3, 3, 3, 2, 2, 2, 2)
     coords = [_position_ship(Ship(size)) for size in ships]
 
     _player_map.draw_ship_placements()
@@ -98,6 +98,14 @@ def _position_ship(ship):
     return ship.coords  # server will only need coords
 
 
+def show_ship_placement_keys():
+    """
+    displays the ship placement key legend.
+    """
+    _key_legend.set_ship_placement_keys()
+    _key_legend.update()
+
+
 def show_battle_keys():
     """
     replaces the ship placement key legend with the battle mode key legend.
@@ -106,13 +114,23 @@ def show_battle_keys():
     _key_legend.update()
 
 
-def reveal_ship(coords):
+def reveal_intact_ships(ship_coords):
     """
-    reveals a destroyed ship of the opponent.
-    :param coords: coordinates of the destroyed ship
+    reveals the ships of the opponent that the player did not manage to destroy.
+    :param ship_coords: the coordinates of all intact ships of the opponent
+    """
+    for coords in ship_coords:
+        reveal_ship(coords, False)
+
+
+def reveal_ship(coords, is_destroyed):
+    """
+    reveals a ship of the opponent.
+    :param coords: coordinates of the ship to reveal
+    :param is_destroyed: True if the ship is destroyed, False otherwise
     """
     ship = Ship(len(coords), coords=coords)
-    _opponent_map.reveal_ship(ship)
+    _opponent_map.reveal_ship(ship, is_destroyed)
     _opponent_map.update()
 
 
@@ -154,6 +172,35 @@ def let_player_shoot():
                 _opponent_map.set_cursor() #b/c cursor moved to message bar
             else:
                 return _opponent_map.fire_shot()
+
+
+def ask_for_another_battle(msg):
+    """
+    asks the player if he is willing to play a rematch. only accepts inputs
+    y/n.
+    :param msg: the message to display to the player
+    :return: True if the player wants a rematch, False otherwise
+    """
+    message(msg + ' Play again? (Y/N)')
+
+    while True:
+        key = _message_bar.get_key()
+        if key == UIData.key_codes['yes']:
+            return True
+        if key == UIData.key_codes['no']:
+            return False
+
+
+def reset_battle():
+    """
+    resets the player's and opponent's map to their default empty state.
+    """
+    global _player_map, _opponent_map
+
+    _player_map = PlayerMap()
+    _opponent_map = OpponentMap()
+    _player_map.update()
+    _opponent_map.update()
 
 
 def handle_exit(msg):
