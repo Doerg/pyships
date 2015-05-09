@@ -46,7 +46,7 @@ class ContentFrame(Window):
         """
         legend_height = UIData.battle['info bar']['height']
         map_box_width = UIData.battle['map']['box']['width']
-        clear_string = ' ' * UIData.title['logon prompt']['input limit']
+        clear_string = ' ' * UIData.title['prompts']['input']['input limit']
 
         name_position_center = (1 + 3*Window._margin + map_box_width +
                                 map_box_width//2)

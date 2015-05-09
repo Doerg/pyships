@@ -41,11 +41,10 @@ def _run_game(stdscr):
         atexit.register(connection.close)
 
         opponent_name = connection.exchange_names(player_name)
-
-        BattleScreen.show_ship_placement_keys()
         BattleScreen.introduce_opponent(opponent_name)
+        BattleScreen.show_ship_placement_keys()
 
-        while True:  #runs until Exception arrives
+        while True:  #runs until Exception is raised
             _run_battle(connection, opponent_name, is_host)
 
     except ConnectionAborted:   #player left the title screen

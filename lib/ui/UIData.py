@@ -44,37 +44,43 @@ title = {
         'vpadding': 3,
         'relative vertical location': 0.1
     },
-    'logon prompt': {
-        'name text': 'Your name:',
-        'ip text': 'Host IP:',
-        'hpadding': 3,
-        'vpadding': 1,
-        'relative vertical location': 0.7,
-        'input limit': 15,
-        'height': 3,
-        'gap': 6
-    },
-    'exit prompt': {
-        'text': 'Connection could not be established! Try again? (y/n):',
-        'hpadding': 3,
-        'vpadding': 1,
-        'relative vertical location': 0.75,
-        'height': 3
+    'prompts': {
+        'general': {
+            'height': 3,
+            'relative vertical location': 0.75,
+            'hpadding': 3,
+            'vpadding': 1
+        },
+        'input': {
+            'texts': {
+                'name': 'Your name:',
+                'ip': 'Host IP:'
+            },
+            'input limit': 15
+        },
+        'question': {
+            'texts': {
+                'host': 'Do you want to host a game? (y/n)',
+                'exit': 'Connection could not be established! Try again? (y/n)'
+            }
+        }
     }
 }
-logon_prompt = title['logon prompt']
-logon_prompt['input offset'] = len(
-    max(
-        (logon_prompt['name text'], logon_prompt['ip text']),
-        key=lambda s: len(s)
-    )
-) + 2*logon_prompt['hpadding']
-logon_prompt['width'] = logon_prompt['input offset'] + \
-                        logon_prompt['input limit'] + \
-                        logon_prompt['hpadding']
 
-exit_prompt = title['exit prompt']
-exit_prompt['width'] = len(exit_prompt['text']) + 2*exit_prompt['hpadding']
+general_prompt = title['prompts']['general']
+
+input_prompt = title['prompts']['input']
+input_prompt['input offset'] = len(
+    max(input_prompt['texts'].values(), key=lambda s: len(s))
+) + 2*general_prompt['hpadding']
+input_prompt['width'] = input_prompt['input offset'] + \
+                        input_prompt['input limit'] + \
+                        general_prompt['hpadding']
+
+question_prompt = title['prompts']['question']
+question_prompt['width'] = len(
+    max(question_prompt['texts'].values(), key=lambda s: len(s))
+) + 2*general_prompt['hpadding']
 
 
 

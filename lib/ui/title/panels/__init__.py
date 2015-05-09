@@ -1,2 +1,2 @@
 from .Background import Background
-from .Prompts import NamePrompt, IpPrompt, ExitPrompt
+from .Prompts import InputPrompt, QuestionPrompt

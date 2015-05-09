@@ -1,32 +1,46 @@
-import curses
 from .Panel import Panel
 from ui import UIData
+import curses
 
 
-class LogonPrompt(Panel):
+class Prompt(Panel):
     """
-    generic class to be inherited from NamePrompt and IpPrompt. don't
-    instantiate directly, choose one of NamePrompt and IpPrompt instead.
+    prompt parent class. don't instantiate directly.
     """
-    _ui_data = UIData.title['logon prompt']
-    _input_offset = _ui_data['input offset']
-    _input_limit = _ui_data['input limit']
+    _ui_data = UIData.title['prompts']['general']
     _height = _ui_data['height']
-    _width = _ui_data['width']
     _rel_vert_loc = _ui_data['relative vertical location']
     _hpadding = _ui_data['hpadding']
     _vpadding = _ui_data['vpadding']
 
-    def __init__(self, text, vert_offset=0):
+    def __init__(self, prompt_type):
         super().__init__(
             self._height, self._width,
-            int(curses.LINES * self._rel_vert_loc) + vert_offset,
+            int(curses.LINES * self._rel_vert_loc),
             curses.COLS//2 - self._width//2
         )
 
         self._win.bkgd(' ', UIData.colors['prompt box'])
         self._win.box()
-        self._win.addstr(self._vpadding, self._hpadding, text, curses.A_BOLD)
+        self._text = self._texts[prompt_type]
+
+
+
+class InputPrompt(Prompt):
+    """
+    prompt that asks the user to enter some text.
+    """
+    _ui_data = UIData.title['prompts']['input']
+    _width = _ui_data['width']
+    _texts = _ui_data['texts']
+    _input_offset = _ui_data['input offset']
+    _input_limit = _ui_data['input limit']
+
+    def __init__(self, prompt_type):
+        super().__init__(prompt_type)
+        self._win.addstr(
+            self._vpadding, self._hpadding, self._text, curses.A_BOLD
+        )
 
 
     def show(self):
@@ -45,7 +59,11 @@ class LogonPrompt(Panel):
         """
         curses.echo()
         curses.curs_set(True)
-        user_input = self._win.getstr(1, self._input_offset, self._input_limit)
+        while True:
+            user_input = self._win.getstr(
+                1, self._input_offset, self._input_limit
+            )
+            if user_input: break  # user input can't be empty
         curses.curs_set(False)
         curses.noecho()
 
@@ -53,56 +71,20 @@ class LogonPrompt(Panel):
 
 
 
-class NamePrompt(LogonPrompt):
+class QuestionPrompt(Prompt):
     """
-    panel asking for the user name.
+    prompt that asks the user a specific yes/no question.
     """
-    _text = LogonPrompt._ui_data['name text']
-
-    def __init__(self):
-        super().__init__(self._text)
-
-
-
-class IpPrompt(LogonPrompt):
-    """
-    panel asking for the host ip.
-    """
-    _text = LogonPrompt._ui_data['ip text']
-    _vert_offset = LogonPrompt._ui_data['gap']
-
-    def __init__(self):
-        super().__init__(
-            UIData.title['logon prompt']['ip text'],
-            vert_offset=self._vert_offset
-        )
-
-
-
-class ExitPrompt(Panel):
-    """
-    panel asking whether the user wants to retry connecting to the server or
-    exit the program.
-    """
-    _ui_data = UIData.title['exit prompt']
-    _text = _ui_data['text']
-    _hpadding = _ui_data['hpadding']
-    _vpadding = _ui_data['vpadding']
-    _rel_vert_loc = _ui_data['relative vertical location']
-    _height = _ui_data['height']
+    _ui_data = UIData.title['prompts']['question']
     _width = _ui_data['width']
+    _texts = _ui_data['texts']
 
-    def __init__(self):
-        super().__init__(
-            self._height, self._width,
-            int(curses.LINES * self._rel_vert_loc),
-            curses.COLS//2 - self._width//2
-        )
 
-        self._win.bkgd(' ', UIData.colors['prompt box'])
-        self._win.box()
+    def __init__(self, prompt_type):
+        super().__init__(prompt_type)
+        text_offset = (self._width - len(self._text)) // 2
         self._win.addstr(
-            self._vpadding, self._hpadding, self._text, curses.A_BOLD
+            self._vpadding, text_offset, self._text, curses.A_BOLD
         )
 
 
