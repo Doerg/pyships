@@ -1,19 +1,12 @@
 import logging
 
+
 LOG_LEVELS = ('CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET')
 LOG_FORMAT = "%(levelname)s::%(asctime)s::" + \
              "%(filename)s:%(lineno)d:: %(msg)s"
 
-
-def setup_logging(is_server, lvl, path):
-    if path:
-        handler = logging.FileHandler(path, 'w')
-    else:
-        if is_server:
-            handler = logging.StreamHandler()
-        else:    #client shouldn't log to stdout, use default logfile instead
-            handler = logging.FileHandler('client.log', 'w')
-
+def setup_logging(lvl, path):
+    handler = logging.FileHandler(path if path else 'client.log', 'w')
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
 
     logger = logging.getLogger()

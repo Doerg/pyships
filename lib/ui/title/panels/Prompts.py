@@ -1,6 +1,6 @@
 import curses
 from .Panel import Panel
-from client import UIData
+from ui import UIData
 
 
 class LogonPrompt(Panel):

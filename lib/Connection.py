@@ -1,13 +1,20 @@
-from multiprocessing.connection import Client
+from multiprocessing.connection import Client, Listener
 from Messages import *
 from CustomExceptions import *
-from BaseConnection import BaseConnection
+import signal
 
 
-class Connection(BaseConnection):
+class Connection(object):
     """
     connection interface used by the game client.
     """
+    _server_port = 12346    #ports for listeners
+    _client_port = 12345
+
+    def __init__(self):
+        self.established = False
+
+
     def establish(self, server_ip):
         """
         sets up connection object for communication with the server.
@@ -15,7 +22,7 @@ class Connection(BaseConnection):
         :return: True is the connection could be established, False otherwise
         """
         try:
-            with BaseConnection.Timeout():
+            with self.Timeout():
                 self._connection = Client((server_ip, self._server_port))
         except:  #general b/c different things can go wrong
             return False
@@ -149,3 +156,24 @@ class Connection(BaseConnection):
             raise OpponentLeft
         if isinstance(message, ShutdownMessage):
             raise ServerShutdown
+
+
+    class Timeout:
+        """
+        context manager class usable via with-statement. can limit the execution
+        of the statement body to a certain amount of seconds. raises a
+        TimeoutError if the execution of the body has not been able to complete
+        during the given time frame.
+        """
+        def __init__(self, seconds=1):
+            self._seconds = seconds
+
+        def _handle_timeout(self, signum, frame):
+            raise TimeoutError
+
+        def __enter__(self):
+            signal.signal(signal.SIGALRM, self._handle_timeout)
+            signal.alarm(self._seconds)
+
+        def __exit__(self, type, value, traceback):
+            signal.alarm(0)
