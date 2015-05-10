@@ -4,7 +4,7 @@ from sys import path
 path.append('lib')  #add lib folder to module search path
 from argparse import ArgumentParser
 from Logger import setup_logging, LOG_LEVELS
-import Game
+from client import Game
 import logging
 
 

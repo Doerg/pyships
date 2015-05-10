@@ -1,4 +1,4 @@
-from ui import UIData
+from client.ui import UIData
 
 
 class Ship(object):

@@ -1,5 +1,5 @@
 from .Panel import Panel
-from ui import UIData
+from client.ui import UIData
 import curses
 
 

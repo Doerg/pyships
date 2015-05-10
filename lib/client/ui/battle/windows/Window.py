@@ -1,5 +1,5 @@
 import curses
-from ui import UIData
+from client.ui import UIData
 
 
 class Window(object):

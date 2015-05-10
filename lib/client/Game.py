@@ -1,6 +1,6 @@
-from Connection import Connection
-from Fleet import Fleet
-from ui import UIData, TitleScreen, BattleScreen
+from .Connection import Connection
+from .Fleet import Fleet
+from .ui import UIData, TitleScreen, BattleScreen
 from CustomExceptions import *
 import curses
 import atexit

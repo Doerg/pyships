@@ -1,6 +1,6 @@
 import curses
 from .Window import Window
-from ui import UIData
+from client.ui import UIData
 
 
 class InfoBar(Window):

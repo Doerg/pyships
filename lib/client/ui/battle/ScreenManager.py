@@ -1,7 +1,7 @@
 from CustomExceptions import ProgramExit
 from .windows import *
 from .Ship import Ship
-from ui import UIData
+from client.ui import UIData
 
 
 def init(player_name):
