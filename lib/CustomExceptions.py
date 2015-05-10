@@ -1,4 +1,3 @@
-### used only by client ###
 class ProgramExit(Exception):
     """
     signal program termination by local user.
@@ -22,20 +21,11 @@ class ConnectionAborted(Exception):
 
 class TimeoutError(Exception):
     """
-    signal that the connection to the server timed out.
+    signal that the connection to the opponent's client timed out.
     """
     pass
 
 
-### used only by server ###
-class ServerShutdown(Exception):
-    """
-    signal shutdown of pyships server.
-    """
-    pass
-
-
-### used by server and client ###
 class OpponentLeft(Exception):
     """
     signal program termination by the remote user.

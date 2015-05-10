@@ -83,10 +83,10 @@ def _run_battle(connection, opponent_name, player_starts):
 
     try:
         if player_starts:
-            _player_shot(connection, opponent_name)
+            _player_shot(connection, opponent_name, fleet)
         while True: #can only exit through exception throw
             _opponent_shot(connection, opponent_name, fleet)
-            _player_shot(connection, opponent_name)
+            _player_shot(connection, opponent_name, fleet)
     except PlayAgain:
         BattleScreen.reset_battle()
         return
@@ -96,7 +96,7 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     """
     lets player place his ships and waits for the opponent to either place
     his ships or exit.
-    :param connection: the connection to the server
+    :param connection: the connection to the opponent's client
     :param opponent_name: the name of the opponent
     :param player_starts: boolean indicating whether player is first to shoot
     :return: the fleet placed by the player
@@ -105,11 +105,12 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     ship_placements = BattleScreen.player_ship_placements(ships)
     BattleScreen.show_battle_keys()
 
+    connection.send_acknowledgement()
     if not connection.has_message():
         BattleScreen.message(
             'Waiting for %s to finish ship placement...' % opponent_name
         )
-    connection.acknowledge_opponent_placements()
+    connection.wait_for_acknowledgement()
 
     message = '%s has finished ship placement. ' % opponent_name
     if player_starts:
@@ -120,12 +121,13 @@ def _handle_ship_placements(connection, opponent_name, player_starts):
     return Fleet(ship_placements)
 
 
-def _player_shot(connection, opponent_name):
+def _player_shot(connection, opponent_name, fleet):
     """
     lets the player shoot, receives the shot result from the opponent and
     displays it on screen.
-    :param connection: the connection to the server
+    :param connection: the connection to the opponent's client
     :param opponent_name: the name of the opponent
+    :param fleet: the fleet of the player
     """
     shot_coords = BattleScreen.let_player_shoot()
     shot_result = connection.deliver_shot(shot_coords)
@@ -133,6 +135,7 @@ def _player_shot(connection, opponent_name):
     if shot_result.destroyed_ship:
         BattleScreen.reveal_ship(shot_result.destroyed_ship, True)
         if shot_result.game_over:
+            connection.send_intact_ships(fleet)
             _check_for_rematch(connection, opponent_name, True)
             raise PlayAgain
         else:
@@ -157,7 +160,7 @@ def _player_shot(connection, opponent_name):
 def _opponent_shot(connection, opponent_name, fleet):
     """
     receives the opponent's shot and displays the result.
-    :param connection: the connection to the server
+    :param connection: the connection to the opponent's client
     :param opponent_name: the name of the opponent
     :param fleet: the fleet of the player
     """
@@ -196,7 +199,7 @@ def _check_for_rematch(connection, opponent_name, player_won):
     asks the player whether he wants to play another game. if this is the case
     and the opponent also agrees to a rematch, this method simply returns. for
     other cases, an exception will be thrown.
-    :param connection: the connection to the server
+    :param connection: the connection to the opponent's client
     :param opponent_name: the name of the opponent
     :param player_won: True if the player won the last battle, False otherwise
     """
@@ -206,13 +209,13 @@ def _check_for_rematch(connection, opponent_name, player_won):
         message = '%s has destroyed your fleet! You lose!' % opponent_name
 
     if BattleScreen.ask_for_another_battle(message):
-        connection.inform_rematch_willingness()
+        connection.send_acknowledgement()
         if not connection.has_message():
             BattleScreen.message(
                 'Waiting for the decision of %s to play again...' %
                 opponent_name
             )
-        connection.acknowledge_rematch_willingness()
+        connection.wait_for_acknowledgement()
         BattleScreen.message(
             "%s agreed to another battle! Please place your ships." %
             opponent_name

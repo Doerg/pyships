@@ -8,41 +8,41 @@ class Connection(object):
     """
     connection interface used by the game client.
     """
-    _server_port = 12346    #ports for listeners
-    _client_port = 12345
+    _host_port = 12345
 
     def __init__(self):
         self.established = False
 
 
-    def establish(self, server_ip):
+    def wait_for_connection(self):
         """
-        sets up connection object for communication with the server.
-        :param server_ip: the ip of the server
-        :return: True is the connection could be established, False otherwise
+        as a game host, waits for a client to connect.
+        """
+        with Listener(('', self._host_port)) as connection_listener:
+            self._connection = connection_listener.accept()
+        self.established = True
+
+
+    def connect_to_host(self, host_ip):
+        """
+        sets up connection to a game host.
+        :param host_ip: the ip of the game host
+        :return: True if the connection could be established, False otherwise
         """
         try:
             with self.Timeout():
-                self._connection = Client((server_ip, self._server_port))
+                self._connection = Client((host_ip, self._host_port))
         except:  #general b/c different things can go wrong
             return False
 
+        self.established = True
         return True
-
-
-    def obtain_player_id(self):
-        """
-        listens for an id message by the server and extracts the assigned id.
-        """
-        self._player_id = self._get_message().player_id
-        self.established = True  #considered established once id received
-        return self._player_id
 
 
     def exchange_names(self, player_name):
         """
-        tells the server the local player's name, receives the remote player's
-        name in return.
+        tells the opponent's client the local player's name, receives the
+        remote player's name in return.
         :param player_name: the name of the local player
         :return: the name of the opponent
         """
@@ -50,32 +50,28 @@ class Connection(object):
         return self._get_message().player_name.decode('utf-8') #came as bytes
 
 
-    def send_placements(self, ship_placements):
+    def send_acknowledgement(self):
         """
-        sends the server the local player's ship placements.
-        :param ship_placements: the local player's ship placements
+        acknowledges to the opponent that a desired action took place.
         """
-        self._connection.send(
-            PlacementMessage(self._player_id, ship_placements)
-        )
+        self._connection.send(AcknowledgementMessage())
 
 
-    def acknowledge_opponent_placements(self):
+    def wait_for_acknowledgement(self):
         """
-        waits a for message acknowledging that the remote player finished ship
-        placements.
+        waits a for an acknowledging message of the remote player.
         """
         self._get_message()
 
 
     def deliver_shot(self, shot_coords):
         """
-        sends the server coordinates of a shot taken by the local player.
-        returns the result of that shot.
+        sends the opponent's client coordinates of a shot taken by the local
+        player. returns the result of that shot.
         :param shot_coords: the coordinates of the shot
         :return: the result of the shot
         """
-        if self.has_message(): #can only be player exit or server shutdown here
+        if self.has_message(): #can only be remote player exit here
             self._get_message()
         self._connection.send(ShotMessage(shot_coords))
         return self._get_message()
@@ -86,7 +82,30 @@ class Connection(object):
         returns the result of a shot taken by the remote player.
         :return: the result of a shot taken by the remote player
         """
-        return self._get_message()
+        return self._get_message().coords
+
+
+    def inform_shot_result(self, is_hit, game_over, destroyed_ship):
+        """
+        sends the opponent's client the result of his last shot.
+        :param is_hit: True if the shot was a hit, False otherwise
+        :param game_over: True if the shot ended the game, False otherwise
+        :param destroyed_ship: if a ship was destroyed by the shot, this will
+        contain the ship's coordinates. otherwise it will be None
+        """
+        self._connection.send(
+            ShotResultMessage(is_hit, game_over, destroyed_ship)
+        )
+
+
+    def send_intact_ships(self, fleet):
+        """
+        sends the opponent's client all the coordinates of the player's ships
+        that are still intact.
+        :param fleet: the player's fleet
+        """
+        ship_coords = [ship.full_coords for ship in fleet.intact_ships]
+        self._connection.send(RevealMessage(ship_coords))
 
 
     def enemy_intact_ships(self):
@@ -97,48 +116,35 @@ class Connection(object):
         return self._get_message().coords
 
 
-    def inform_rematch_willingness(self):
-        """
-        informs the opponent that the player wants a rematch.
-        """
-        self._connection.send(RematchMessage(self._player_id))
-
-
-    def acknowledge_rematch_willingness(self):
-        """
-        waits a for message acknowledging that the remote player is willing to
-        play a rematch.
-        """
-        self._get_message()
-
-
     def inform_exit(self):
         """
-        informs the server that the local player terminated the program.
+        informs the opponent's client that the local player terminated the
+        program.
         """
-        self._connection.send(ExitMessage(self._player_id))
+        self._connection.send(ExitMessage())
 
 
     def has_message(self):
         """
-        returns whether there is a message from the server not read yet.
-        :return: True if a message from the server is available, False otherwise
+        returns whether there is a message from the opponent's client not read
+        yet.
+        :return: True if a message is available, False otherwise
         """
         return self._connection.poll()
 
 
     def close(self):
         """
-        closes both message sender and listener.
+        closes the connection to the opponent's client.
         """
         self._connection.close()
 
 
     def _get_message(self):
         """
-        returns the oldest message in the message queue. blocks until a
-        message is available.
-        :return: the oldest message in the message queue
+        returns the oldest message of the connection. blocks until a message is
+        available.
+        :return: the oldest message of the connection
         """
         message = self._connection.recv()
         self._abortion_check(message) #message might signal some sort of exit
@@ -147,15 +153,12 @@ class Connection(object):
 
     def _abortion_check(self, message):
         """
-        checks whether the given message signals the exit of the remote player
-        or the shutdown of the pyships server. raises the appropriate exception
-        if either is the case.
+        checks whether the given message signals the exit of the remote player.
+        raises the appropriate exception that is the case.
         :param message: the message to be checked
         """
         if isinstance(message, ExitMessage):
             raise OpponentLeft
-        if isinstance(message, ShutdownMessage):
-            raise ServerShutdown
 
 
     class Timeout:

@@ -54,8 +54,8 @@ class InputPrompt(Prompt):
 
     def get_input(self):
         """
-        queries user string input from this prompt.
-        :return: user string input
+        queries user text input from this prompt.
+        :return: user text input
         """
         curses.echo()
         curses.curs_set(True)
