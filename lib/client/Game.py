@@ -27,7 +27,7 @@ def _run_game(stdscr):
 
     try:
         player_name = _connect_to_server(connection)
-        is_host = _connect_to_or_host_game(connection)
+        is_host = _connect_to_or_host_game(connection, player_name)
 
         opponent_name = connection.exchange_names(player_name)
         BattleScreen.introduce_opponent(opponent_name)
@@ -53,6 +53,7 @@ def _connect_to_server(connection):
     """
     while True:
         player_name, server_ip = TitleScreen.server_logon()
+        return player_name  #REMOVE ME
         if connection.connect(server_ip):
             return player_name
         else:
@@ -60,15 +61,16 @@ def _connect_to_server(connection):
                 raise ProgramExit
 
 
-def _connect_to_or_host_game(connection):
+def _connect_to_or_host_game(connection, player_name):
     """
     gives the player the opportunity to either join a hosted game or to host a
     game himself.
     :param connection: the connection object
+    :param player_name: the name of the player
     :return: True if the player decided to be host, False otherwise
     """
     while True:
-        host_ip = TitleScreen.select_host(connection.available_hosts())
+        host_ip = TitleScreen.select_host(None)#connection.available_hosts
 
         if(host_ip):
             if connection.connect(host_ip):

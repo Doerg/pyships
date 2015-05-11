@@ -12,11 +12,18 @@ class Panel(object):
         self._panel = curses.panel.new_panel(self._win)
 
 
+    def update(self):
+        """
+        redraw the window belonging to this panel.
+        """
+        self._win.refresh()
+
+
     def show(self):
         """
         redraw the window belonging to this panel and make this panel visible.
         """
-        self._win.refresh()
+        self.update()
         self._panel.show()
 
 

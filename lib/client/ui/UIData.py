@@ -12,7 +12,9 @@ key_codes = {
     'fire': 10,         #enter
     'exit': ord('q'),
     'yes': ord('y'),
-    'no': ord('n')
+    'no': ord('n'),
+    'refresh': ord('r'),
+    'hosts': range(ord('0'), ord('9')+1)
 }
 
 
@@ -46,12 +48,12 @@ title = {
     },
     'prompts': {
         'common': {
-            'height': 3,
             'hpadding': 3,
             'vpadding': 1
         },
         'input': {
             'relative vertical location': 0.7,
+            'height': 3,
             'input limit': 15,
             'gap height': 6,
             'texts': {
@@ -61,8 +63,17 @@ title = {
         },
         'question': {
             'relative vertical location': 0.75,
+            'height': 3,
             'texts': {
                 'exit': 'Connection could not be established! Try again? (y/n)'
+            }
+        },
+        'host list': {
+            'relative vertical location': 0.5,
+            'max hosts': 9,
+            'texts': {
+                'top': 'Please join a game (1-9) or host a game yourself (0):',
+                'bottom': "Press 'R' to refresh the host list"
             }
         }
     }
@@ -82,6 +93,13 @@ question_prompt = title['prompts']['question']
 question_prompt['width'] = len(
     max(question_prompt['texts'].values(), key=lambda s: len(s))
 ) + 2*general_prompt['hpadding']
+
+host_list = title['prompts']['host list']
+host_list['width'] = len(
+    max(host_list['texts'].values(), key=lambda s: len(s))
+) + 2*general_prompt['hpadding']
+host_list['height'] = 2 + host_list['max hosts']+2 + 2 +\
+                        2*general_prompt['vpadding']
 
 
 

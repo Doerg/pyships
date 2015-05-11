@@ -8,14 +8,12 @@ class Prompt(Panel):
     prompt parent class. don't instantiate directly.
     """
     _ui_data = UIData.title['prompts']['common']
-    _height = _ui_data['height']
     _hpadding = _ui_data['hpadding']
     _vpadding = _ui_data['vpadding']
 
-    def __init__(self, prompt_name, gap=False):
+    def __init__(self, gap=False):
         """
         sets up a prompt with all the common graphical features.
-        :param prompt_name: name indicating the purpose of this prompt
         :param gap: True if the prompt has a vertical offset, False otherwise
         """
         vertical_gap = self._ui_data['gap height'] if gap else 0
@@ -28,7 +26,6 @@ class Prompt(Panel):
 
         self._win.bkgd(' ', UIData.colors['prompt box'])
         self._win.box()
-        self._text = self._texts[prompt_name]
 
 
 
@@ -39,19 +36,20 @@ class InputPrompt(Prompt):
     _ui_data = UIData.title['prompts']['input']
     _rel_vert_loc = _ui_data['relative vertical location']
     _width = _ui_data['width']
+    _height = _ui_data['height']
     _texts = _ui_data['texts']
     _input_offset = _ui_data['input offset']
     _input_limit = _ui_data['input limit']
 
-    def __init__(self, prompt_name, gap=False):
+    def __init__(self, text_key, gap=False):
         """
         sets up an input prompt.
-        :param prompt_name: name indicating the purpose of this prompt
+        :param text_key: key to access the text of this prompt
         :param gap: True if the prompt has a vertical offset, False otherwise
         """
-        super().__init__(prompt_name, gap)
+        super().__init__(gap)
         self._win.addstr(
-            self._vpadding, self._hpadding, self._text, curses.A_BOLD
+            self._vpadding, self._hpadding, self._texts[text_key], curses.A_BOLD
         )
 
 
@@ -90,19 +88,19 @@ class QuestionPrompt(Prompt):
     _ui_data = UIData.title['prompts']['question']
     _rel_vert_loc = _ui_data['relative vertical location']
     _width = _ui_data['width']
+    _height = _ui_data['height']
     _texts = _ui_data['texts']
 
 
-    def __init__(self, prompt_name):
+    def __init__(self, text_key):
         """
         sets up a question prompt.
-        :param prompt_name: name indicating the purpose of this prompt
+        :param text_key: key to access the text of this prompt
         """
-        super().__init__(prompt_name)
-        text_offset = (self._width - len(self._text)) // 2
-        self._win.addstr(
-            self._vpadding, text_offset, self._text, curses.A_BOLD
-        )
+        super().__init__()
+        text = self._texts[text_key]
+        text_offset = (self._width - len(text)) // 2
+        self._win.addstr(self._vpadding, text_offset, text, curses.A_BOLD)
 
 
     def get_answer(self):
@@ -119,3 +117,69 @@ class QuestionPrompt(Prompt):
                 return True
             elif answer == 'N':
                 return False
+
+
+
+class HostList(Prompt):
+    """
+    panel that lists all available host and lets the user choose to either join
+    one of those hosts or to host a game himself.
+    """
+    _ui_data = UIData.title['prompts']['host list']
+    _rel_vert_loc = _ui_data['relative vertical location']
+    _width = _ui_data['width']
+    _height = _ui_data['height']
+    _texts = _ui_data['texts']
+    _list_length = _ui_data['max hosts']
+
+    def __init__(self):
+        super().__init__()
+        self._win.addstr(
+            self._vpadding, self._hpadding, self._texts['top'], curses.A_BOLD
+        )
+        self._win.addstr(
+            self._height - self._vpadding - 1, self._hpadding,
+            self._texts['bottom'], curses.A_BOLD
+        )
+        self._win.bkgdset(' ', curses.A_BOLD)
+
+
+    def fill_hosts(self, available_hosts):
+        """
+        fills the host list with all currently available hosts.
+        :param available_hosts: all currently available hosts
+        """
+        list_offset = self._vpadding + 1
+
+        for index, host in enumerate(available_hosts, start=1):
+            self._win.addstr(
+                list_offset + index, self._hpadding,
+                "%2d\t%-15s: %-16s" % (index, host['ip'], host['name'])
+            )
+
+        index += 1
+        while index <= self._list_length:
+            self._win.addstr(
+                list_offset + index, self._hpadding,
+                "%2d\t%-33s" % (index, "Free slot")
+            )
+            index += 1
+
+        self._win.addstr(
+            list_offset + index + 1, self._hpadding,
+            " 0\t%-33s" % "Host a game yourself "
+        )
+
+
+    def select_host(self):
+        """
+        returns user input for this panel. allowed inputs are numbers 0-9 and
+        the letter 'r'.
+        :return: the selected host number as an integer, or the refresh key code
+        """
+        while True:
+            key = self._win.getch()
+            if key == UIData.key_codes['refresh']:
+                return key
+            if key in UIData.key_codes['hosts']:
+                return key - ord('0')
