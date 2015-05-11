@@ -141,7 +141,7 @@ class HostList(Prompt):
             self._height - self._vpadding - 1, self._hpadding,
             self._texts['bottom'], curses.A_BOLD
         )
-        self._win.bkgdset(' ', curses.A_BOLD)
+        self._win.bkgdset(' ', UIData.colors['host list'] | curses.A_BOLD)
 
 
     def fill_hosts(self, available_hosts):

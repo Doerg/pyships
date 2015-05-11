@@ -72,7 +72,7 @@ def uninit():
     """
     free all title screen resources.
     """
-    global _background, _name_prompt, _ip_prompt, _exit_prompt
+    global _background, _name_prompt, _ip_prompt, _exit_prompt, _host_list
     _background.clear()
     _background.update()
-    _background = _name_prompt = _ip_prompt = _exit_prompt = None
+    _background = _name_prompt = _ip_prompt = _exit_prompt, _host_list = None

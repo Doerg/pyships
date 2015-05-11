@@ -171,6 +171,7 @@ def init_colors():
     curses.init_pair(14, curses.COLOR_RED, curses.COLOR_BLUE)
     curses.init_pair(15, curses.COLOR_RED, curses.COLOR_BLUE)
     curses.init_pair(16, curses.COLOR_WHITE, curses.COLOR_BLUE)
+    curses.init_pair(17, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
     colors['clear'] = curses.color_pair(1)
     colors['ocean'] = curses.color_pair(2)
@@ -188,3 +189,4 @@ def init_colors():
     colors['blocked ship'] = curses.color_pair(14)
     colors['hit'] = curses.color_pair(15)
     colors['miss'] = curses.color_pair(16)
+    colors['host list'] = curses.color_pair(17)
