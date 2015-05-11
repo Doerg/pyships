@@ -23,52 +23,67 @@ def _run_game(stdscr):
     TitleScreen.init()
 
     connection = Connection()
+    atexit.register(connection.close)
 
     try:
-        player_name = TitleScreen.ask_name()
-        is_host = TitleScreen.ask_if_host()
-
-        if(is_host):
-            TitleScreen.uninit()
-            BattleScreen.init(player_name)
-            BattleScreen.message('Waiting for an opponent to connect...')
-            connection.wait_for_connection()
-        else:
-            _connect_to_host(connection)
-            TitleScreen.uninit()
-            BattleScreen.init(player_name)
-
-        atexit.register(connection.close)
+        player_name = _connect_to_server(connection)
+        is_host = _connect_to_or_host_game(connection)
 
         opponent_name = connection.exchange_names(player_name)
         BattleScreen.introduce_opponent(opponent_name)
         BattleScreen.show_ship_placement_keys()
 
-        while True:  #runs until Exception is raised
+        while True:  # runs until Exception is raised
             _run_battle(connection, opponent_name, is_host)
 
-    except ConnectionAborted:   #player left the title screen
-        return
-    except ProgramExit:         #only raised after connection established
-        connection.inform_exit()
-    except KeyboardInterrupt:   #can happen anytime
+    except ServerShutdown:      # server got killed
+        TitleScreen.handle_exit('Server has shut down!')
+    except (ProgramExit, KeyboardInterrupt):   # local client got killed
         if connection.established: connection.inform_exit()
-    except OpponentLeft:        #remote player quit
+    except OpponentLeft:        # remote player left
         BattleScreen.handle_exit('%s has left the game!' % opponent_name)
 
 
-def _connect_to_host(connection):
+def _connect_to_server(connection):
     """
-    establishes a connection to a game host, requiring user input from the
+    establishes a connection to the server, requiring user input from the
     title screen.
-    :param connection: the connection to the game host, not established yet
+    :param connection: the connection object, not connected yet
+    :return: the name of the player
     """
     while True:
-        if connection.connect_to_host(TitleScreen.ask_host_ip()):
-            return
+        player_name, server_ip = TitleScreen.server_logon()
+        if connection.connect(server_ip):
+            return player_name
         else:
             if not TitleScreen.ask_connection_retry():
-                raise ConnectionAborted
+                raise ProgramExit
+
+
+def _connect_to_or_host_game(connection):
+    """
+    gives the player the opportunity to either join a hosted game or to host a
+    game himself.
+    :param connection: the connection object
+    :return: True if the player decided to be host, False otherwise
+    """
+    while True:
+        host_ip = TitleScreen.select_host(connection.available_hosts())
+
+        if(host_ip):
+            if connection.connect(host_ip):
+                TitleScreen.uninit()
+                BattleScreen.init(player_name)
+                return False
+        else:  # host ip is None: player wants to host a game
+            TitleScreen.uninit()
+            BattleScreen.init(player_name)
+            BattleScreen.message('Waiting for an opponent to connect...')
+            connection.wait_for_connection()
+            return True
+
+        if not TitleScreen.ask_connection_retry(): # if we get here: connecting
+            raise ProgramExit                      # to remote game host failed
 
 
 def _run_battle(connection, opponent_name, player_starts):
@@ -84,7 +99,7 @@ def _run_battle(connection, opponent_name, player_starts):
     try:
         if player_starts:
             _player_shot(connection, opponent_name, fleet)
-        while True: #can only exit through exception throw
+        while True: # can only exit through exception throw
             _opponent_shot(connection, opponent_name, fleet)
             _player_shot(connection, opponent_name, fleet)
     except PlayAgain:
@@ -166,7 +181,7 @@ def _opponent_shot(connection, opponent_name, fleet):
     """
     shot_coords = connection.receive_shot()
     is_hit = fleet.receive_shot(shot_coords)
-    destroyed_ship = fleet.destroyed_ship #might be None
+    destroyed_ship = fleet.destroyed_ship  # is None if no ship got destroyed
     game_over = fleet.destroyed
 
     BattleScreen.show_shot(shot_coords, is_hit)

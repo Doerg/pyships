@@ -11,7 +11,12 @@ class Connection(object):
     _host_port = 12345
 
     def __init__(self):
-        self.established = False
+        self._connection = None
+
+
+    @property
+    def established(self):
+        return self._connection != None
 
 
     def wait_for_connection(self):
@@ -20,7 +25,6 @@ class Connection(object):
         """
         with Listener(('', self._host_port)) as connection_listener:
             self._connection = connection_listener.accept()
-        self.established = True
 
 
     def connect_to_host(self, host_ip):
@@ -35,7 +39,6 @@ class Connection(object):
         except:  #general b/c different things can go wrong
             return False
 
-        self.established = True
         return True
 
 
@@ -137,7 +140,9 @@ class Connection(object):
         """
         closes the connection to the opponent's client.
         """
-        self._connection.close()
+        if self.established:
+            self._connection.close()
+            self._connection = None
 
 
     def _get_message(self):
