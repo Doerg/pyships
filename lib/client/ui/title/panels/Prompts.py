@@ -81,11 +81,11 @@ class InputPrompt(Prompt):
 
 
 
-class QuestionPrompt(Prompt):
+class KeypressPrompt(Prompt):
     """
-    prompt that asks the user a specific yes/no question.
+    prompt that asks the user for a single keypress.
     """
-    _ui_data = UIData.title['prompts']['question']
+    _ui_data = UIData.title['prompts']['keypress']
     _rel_vert_loc = _ui_data['relative vertical location']
     _width = _ui_data['width']
     _height = _ui_data['height']
@@ -94,7 +94,7 @@ class QuestionPrompt(Prompt):
 
     def __init__(self, text_key):
         """
-        sets up a question prompt.
+        sets up a keypress prompt.
         :param text_key: key to access the text of this prompt
         """
         super().__init__()
@@ -103,20 +103,14 @@ class QuestionPrompt(Prompt):
         self._win.addstr(self._vpadding, text_offset, text, curses.A_BOLD)
 
 
-    def get_answer(self):
+    def get_key(self):
         """
-        asks the user to press either 'y' or 'n'. doesn't accept other input.
-        :return: True for input 'Y/y', False for input 'N/n'
+        returns a keypress from the user.
+        :return: a keypress as a character code
         """
         curses.noecho()
         curses.curs_set(False)
-
-        while True:
-            answer = self._win.getkey().upper()
-            if answer == 'Y':
-                return True
-            elif answer == 'N':
-                return False
+        return self._win.getch()
 
 
 
@@ -135,7 +129,10 @@ class HostList(Prompt):
     def __init__(self):
         super().__init__()
         self._win.addstr(
-            self._vpadding, self._hpadding, self._texts['top'], curses.A_BOLD
+            self._vpadding, self._hpadding, self._texts['top1'], curses.A_BOLD
+        )
+        self._win.addstr(
+            self._vpadding+1, self._hpadding, self._texts['top2'], curses.A_BOLD
         )
         self._win.addstr(
             self._height - self._vpadding - 1, self._hpadding,
@@ -149,7 +146,7 @@ class HostList(Prompt):
         fills the host list with all currently available hosts.
         :param available_hosts: all currently available hosts
         """
-        list_offset = self._vpadding + 1
+        list_offset = self._vpadding + 2
 
         for index, host in enumerate(available_hosts, start=1):
             self._win.addstr(
@@ -175,7 +172,7 @@ class HostList(Prompt):
         """
         returns user input for this panel. allowed inputs are numbers 0-9 and
         the letter 'r'.
-        :return: the selected host number as an integer, or the refresh key code
+        :return: the selected host number as an integer, or the refresh-key code
         """
         while True:
             key = self._win.getch()

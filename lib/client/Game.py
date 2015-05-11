@@ -37,7 +37,7 @@ def _run_game(stdscr):
             _run_battle(connection, opponent_name, is_host)
 
     except ServerShutdown:      # server got killed
-        TitleScreen.handle_exit('Server has shut down!')
+        TitleScreen.shutdown_info()
     except (ProgramExit, KeyboardInterrupt):   # local client got killed
         if connection.established: connection.inform_exit()
     except OpponentLeft:        # remote player left

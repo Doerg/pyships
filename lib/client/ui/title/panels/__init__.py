@@ -1,2 +1,2 @@
 from .Background import Background
-from .Prompts import InputPrompt, QuestionPrompt, HostList
+from .Prompts import InputPrompt, KeypressPrompt, HostList

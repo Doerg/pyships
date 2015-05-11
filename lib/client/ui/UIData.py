@@ -61,18 +61,20 @@ title = {
                 'ip': 'Server IP:'
             },
         },
-        'question': {
+        'keypress': {
             'relative vertical location': 0.75,
             'height': 3,
             'texts': {
-                'exit': 'Connection could not be established! Try again? (y/n)'
+                'exit': 'Connection could not be established! Try again? (Y/N)',
+                'shutdown': "Server has shut down! Please press 'Q' to exit"
             }
         },
         'host list': {
             'relative vertical location': 0.5,
             'max hosts': 9,
             'texts': {
-                'top': 'Please join a game (1-9) or host a game yourself (0):',
+                'top1': 'Press numbers 1-9 to join or 0 to host a game.',
+                'top2': 'Hosting a game requires at least one free slot.',
                 'bottom': "Press 'R' to refresh the host list"
             }
         }
@@ -89,17 +91,18 @@ input_prompt['width'] = input_prompt['input offset'] + \
                         input_prompt['input limit'] + \
                         general_prompt['hpadding']
 
-question_prompt = title['prompts']['question']
-question_prompt['width'] = len(
-    max(question_prompt['texts'].values(), key=lambda s: len(s))
+keypress_prompt = title['prompts']['keypress']
+keypress_prompt['width'] = len(
+    max(keypress_prompt['texts'].values(), key=lambda s: len(s))
 ) + 2*general_prompt['hpadding']
 
 host_list = title['prompts']['host list']
 host_list['width'] = len(
     max(host_list['texts'].values(), key=lambda s: len(s))
 ) + 2*general_prompt['hpadding']
-host_list['height'] = 2 + host_list['max hosts']+2 + 2 +\
-                        2*general_prompt['vpadding']
+host_list['height'] = 2*general_prompt['vpadding'] + \
+                        host_list['max hosts']+2 + \
+                        len(host_list['texts']) + 2
 
 
 
