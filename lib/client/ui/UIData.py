@@ -45,29 +45,30 @@ title = {
         'relative vertical location': 0.1
     },
     'prompts': {
-        'general': {
+        'common': {
             'height': 3,
-            'relative vertical location': 0.75,
             'hpadding': 3,
             'vpadding': 1
         },
         'input': {
+            'relative vertical location': 0.7,
+            'input limit': 15,
+            'gap height': 6,
             'texts': {
                 'name': 'Your name:',
-                'ip': 'Host IP:'
+                'ip': 'Server IP:'
             },
-            'input limit': 15
         },
         'question': {
+            'relative vertical location': 0.75,
             'texts': {
-                'host': 'Do you want to host a game? (y/n)',
                 'exit': 'Connection could not be established! Try again? (y/n)'
             }
         }
     }
 }
 
-general_prompt = title['prompts']['general']
+general_prompt = title['prompts']['common']
 
 input_prompt = title['prompts']['input']
 input_prompt['input offset'] = len(
