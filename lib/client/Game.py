@@ -23,7 +23,7 @@ def _run_game(stdscr):
     TitleScreen.init()
 
     connection = Connection()
-    atexit.register(connection.close)
+    atexit.register(connection.ensure_closing)
 
     try:
         player_name = _connect_to_server(connection)

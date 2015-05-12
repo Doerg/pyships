@@ -33,11 +33,7 @@ class Connection(object):
         except:  # general b/c different things can go wrong
             return False
 
-        if self.established:  # if connected to the server
-            self.inform_exit()
-            self.close()
-
-        self._connection = new_connection
+        self._set_connection(new_connection)
         return True
 
 
@@ -46,11 +42,22 @@ class Connection(object):
         cuts the connection with the server and listens for a client to connect.
         this method is called when a player decided to become a game host.
         """
-        self.inform_exit()
-        self.close()
-
         with Listener(('', self._host_port)) as connection_listener:
-            self._connection = connection_listener.accept()
+            new_connection = connection_listener.accept()
+
+        self._set_connection(new_connection)
+
+
+    def _set_connection(self, new_connection):
+        """
+        disconnects from the previous connection, if there is one, and assigns
+        the new connection as the connection to be used from now on.
+        :param new_connection: the new connection to be used
+        """
+        if self.established:  # if connected to the server
+            self.inform_exit()
+            self._connection.close()
+        self._connection = new_connection
 
 
     def available_hosts(self):
@@ -165,7 +172,7 @@ class Connection(object):
         return self._connection.poll()
 
 
-    def close(self):
+    def ensure_closing(self):
         """
         closes the current connection.
         """
