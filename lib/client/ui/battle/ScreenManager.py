@@ -4,24 +4,24 @@ from .Ship import Ship
 from client.ui import UIData
 
 
+_windows = {}
+
 def init(player_name):
     """
     initializes all the windows of the battle screen and displays them.
     :param player_name: the name of the player
     """
-    global _content_frame, _key_legend, _message_bar, _player_map, _opponent_map
+    _windows['content frame'] = ContentFrame(player_name)
+    _windows['key legend'] = KeyLegend()
+    _windows['player map'] = PlayerMap()
+    _windows['opponent map'] = OpponentMap()
+    _windows['message bar'] = MessageBar()
 
-    _content_frame = ContentFrame(player_name)
-    _key_legend = KeyLegend()
-    _player_map = PlayerMap()
-    _opponent_map = OpponentMap()
-    _message_bar = MessageBar()
-
-    _content_frame.update()
-    _key_legend.update()
-    _player_map.update()
-    _opponent_map.update()
-    _message_bar.update()
+    _windows['content frame'].update()
+    _windows['key legend'].update()
+    _windows['player map'].update()
+    _windows['opponent map'].update()
+    _windows['message bar'].update()
 
 
 def introduce_opponent(opponent_name):
@@ -30,8 +30,8 @@ def introduce_opponent(opponent_name):
     message bar.
     :param opponent_name: the name of the player's opponent
     """
-    _content_frame.set_opponent_name(opponent_name)
-    _content_frame.update()
+    _windows['content frame'].set_opponent_name(opponent_name)
+    _windows['content frame'].update()
     message("Your opponent is '%s'! Please place your ships." % opponent_name)
 
 
@@ -50,8 +50,8 @@ def player_ship_placements(ships):
 
     coords = [_position_ship(Ship(size)) for size in ships]
 
-    _player_map.draw_ship_placements()
-    _player_map.update()
+    _windows['player map'].draw_ship_placements()
+    _windows['player map'].update()
 
     return coords
 
@@ -66,10 +66,10 @@ def _position_ship(ship):
     misplacement = False
 
     while True:
-        _player_map.draw_ship_placements(new_ship=ship)
-        _player_map.update()
+        _windows['player map'].draw_ship_placements(new_ship=ship)
+        _windows['player map'].update()
 
-        key = _player_map.get_key()
+        key = _windows['player map'].get_key()
 
         if key == keys['exit']:
             raise ProgramExit
@@ -89,7 +89,7 @@ def _position_ship(ship):
                 misplacement = True
             else:
                 ship.place_on_map()
-                _player_map.add_ship(ship)
+                _windows['player map'].add_ship(ship)
                 if misplacement:
                     message('Please place your next ship.')
                     misplacement = False
@@ -102,16 +102,16 @@ def show_ship_placement_keys():
     """
     displays the ship placement key legend.
     """
-    _key_legend.set_ship_placement_keys()
-    _key_legend.update()
+    _windows['key legend'].set_ship_placement_keys()
+    _windows['key legend'].update()
 
 
 def show_battle_keys():
     """
     replaces the ship placement key legend with the battle mode key legend.
     """
-    _key_legend.set_battle_keys()
-    _key_legend.update()
+    _windows['key legend'].set_battle_keys()
+    _windows['key legend'].update()
 
 
 def reveal_intact_ships(ship_coords):
@@ -130,8 +130,8 @@ def reveal_ship(coords, is_destroyed):
     :param is_destroyed: True if the ship is destroyed, False otherwise
     """
     ship = Ship(len(coords), coords=coords)
-    _opponent_map.reveal_ship(ship, is_destroyed)
-    _opponent_map.update()
+    _windows['opponent map'].reveal_ship(ship, is_destroyed)
+    _windows['opponent map'].update()
 
 
 def show_shot(coords, is_hit, opponent=False):
@@ -142,7 +142,7 @@ def show_shot(coords, is_hit, opponent=False):
     :param is_hit: whether the shot to display is a hit
     :param opponent: whether the shot is to be displayed on the opponent's map
     """
-    map_to_update = _opponent_map if opponent else _player_map
+    map_to_update = _windows['opponent map' if opponent else 'player map']
     map_to_update.display_shot(coords, is_hit)
     map_to_update.update()
 
@@ -154,24 +154,24 @@ def let_player_shoot():
     """
     keys = UIData.key_codes
 
-    _opponent_map.set_cursor()
+    _windows['opponent map'].set_cursor()
 
     while True:
-        key = _opponent_map.get_key()
+        key = _windows['opponent map'].get_key()
 
         if key == keys['exit']:
             raise ProgramExit
         if key in (keys['up'], keys['down'], keys['left'], keys['right']):
-            _opponent_map.move_cursor(key)
+            _windows['opponent map'].move_cursor(key)
         elif key == keys['fire']:
-            if _opponent_map.is_repeated_shot():
+            if _windows['opponent map'].is_repeated_shot():
                 message(
                     "You already fired at this position. " +
                     "Please choose another one."
-                )
-                _opponent_map.set_cursor() #b/c cursor moved to message bar
+                )   # cursor moved to message bar, so reset it:
+                _windows['opponent map'].set_cursor()
             else:
-                return _opponent_map.fire_shot()
+                return _windows['opponent map'].fire_shot()
 
 
 def ask_for_another_battle(msg):
@@ -184,7 +184,7 @@ def ask_for_another_battle(msg):
     message(msg + ' Play again? (Y/N)')
 
     while True:
-        key = _message_bar.get_key()
+        key = _windows['message bar'].get_key()
         if key == UIData.key_codes['yes']:
             return True
         if key == UIData.key_codes['no']:
@@ -195,12 +195,10 @@ def reset_battle():
     """
     resets the player's and opponent's map to their default empty state.
     """
-    global _player_map, _opponent_map
-
-    _player_map = PlayerMap()
-    _opponent_map = OpponentMap()
-    _player_map.update()
-    _opponent_map.update()
+    _windows['player map'] = PlayerMap()
+    _windows['opponent map'] = OpponentMap()
+    _windows['player map'].update()
+    _windows['opponent map'].update()
 
 
 def handle_exit(msg):
@@ -209,7 +207,7 @@ def handle_exit(msg):
     :param msg: the message to display
     """
     message(msg + " Please press 'Q' to exit.")
-    while _message_bar.get_key() != UIData.key_codes['exit']:
+    while _windows['message bar'].get_key() != UIData.key_codes['exit']:
         pass
 
 
@@ -218,5 +216,5 @@ def message(msg):
     writes the message to the message bar and displays it.
     :param msg: the message to display
     """
-    _message_bar.put_message(msg)
-    _message_bar.update()
+    _windows['message bar'].put_message(msg)
+    _windows['message bar'].update()
