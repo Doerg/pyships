@@ -53,8 +53,8 @@ def _connect_to_server(connection):
     """
     while True:
         player_name, server_ip = TitleScreen.server_logon()
-        return player_name  #REMOVE ME
         if connection.connect(server_ip):
+            connection.deliver_name(player_name)
             return player_name
         else:
             if not TitleScreen.ask_connection_retry():

@@ -1,3 +1,14 @@
+class HostsMessage(object):
+    """
+    can be used by a client to query the available game hosts from the server,
+    or it can be used by the server to deliver the available game hosts to the
+    client.
+    """
+    def __init__(self, available_hosts=None):
+        if available_hosts != None:
+            self.available_hosts = available_hosts
+
+
 class NameMessage(object):
     """
     delivers the name of one player to the other player's client.
@@ -36,7 +47,7 @@ class RevealMessage(object):
 
 class ExitMessage(object):
     """
-    sent by a client to signal program exit.
+    sent by a client to signal disconnection / program exit.
     """
     pass
 

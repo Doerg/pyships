@@ -19,37 +19,65 @@ class Connection(object):
         return self._connection != None
 
 
-    def wait_for_connection(self):
+    def connect(self, ip):
         """
-        as a game host, waits for a client to connect.
-        """
-        with Listener(('', self._host_port)) as connection_listener:
-            self._connection = connection_listener.accept()
-
-
-    def connect_to_host(self, host_ip):
-        """
-        sets up connection to a game host.
-        :param host_ip: the ip of the game host
+        sets up connection to the server or a game host. if a connection to the
+        server is currently established, it will be cut and replaced by the
+        connection to the game host.
+        :param host_ip: the ip of the server / game host
         :return: True if the connection could be established, False otherwise
         """
         try:
             with self.Timeout():
-                self._connection = Client((host_ip, self._host_port))
-        except:  #general b/c different things can go wrong
+                new_connection = Client((ip, self._host_port))
+        except:  # general b/c different things can go wrong
             return False
 
+        if self.established:  # if connected to the server
+            self.inform_exit()
+            self.close()
+
+        self._connection = new_connection
         return True
+
+
+    def wait_for_connection(self):
+        """
+        cuts the connection with the server and listens for a client to connect.
+        this method is called when a player decided to become a game host.
+        """
+        self.inform_exit()
+        self.close()
+
+        with Listener(('', self._host_port)) as connection_listener:
+            self._connection = connection_listener.accept()
+
+
+    def available_hosts(self):
+        """
+        queries the available hosts from the server.
+        :return: all available hosts as tuples containing ip/name
+        """
+        self._connection.send(HostsMessage())
+        return self._get_message.available_hosts
+
+
+    def deliver_name(player_name):
+        """
+        tells the server / opponent's client the local player's name.
+        :param player_name: the name of the local player
+        """
+        self._connection.send(NameMessage(player_name))
 
 
     def exchange_names(self, player_name):
         """
-        tells the opponent's client the local player's name, receives the
-        remote player's name in return.
+        tells the server / opponent's client the local player's name, receives
+        the remote player's name in return.
         :param player_name: the name of the local player
         :return: the name of the opponent
         """
-        self._connection.send(NameMessage(player_name))
+        self.deliver_name(player_name)
         return self._get_message().player_name.decode('utf-8') #came as bytes
 
 
@@ -121,8 +149,9 @@ class Connection(object):
 
     def inform_exit(self):
         """
-        informs the opponent's client that the local player terminated the
-        program.
+        if currently connected to a server, it informs that the client will
+        disconnect shortly. if currently connected to a client, it informs that
+        the local player will terminate the program.
         """
         self._connection.send(ExitMessage())
 
@@ -138,7 +167,7 @@ class Connection(object):
 
     def close(self):
         """
-        closes the connection to the opponent's client.
+        closes the current connection.
         """
         if self.established:
             self._connection.close()
