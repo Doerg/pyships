@@ -65,7 +65,8 @@ title = {
             'relative vertical location': 0.75,
             'height': 3,
             'texts': {
-                'exit': 'Connection could not be established! Try again? (Y/N)',
+                'retry': 'Connection could not be established!' + \
+                            ' Try again? (Y/N)',
                 'shutdown': "Server has shut down! Please press 'Q' to exit"
             }
         },

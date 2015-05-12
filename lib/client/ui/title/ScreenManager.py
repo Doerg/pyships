@@ -11,7 +11,7 @@ def init():
     _panels["background"] = Background()
     _panels["name prompt"] = InputPrompt('name')
     _panels["ip prompt"] = InputPrompt('ip', gap=True)
-    _panels["exit prompt"] = KeypressPrompt('exit')
+    _panels["retry prompt"] = KeypressPrompt('retry')
     _panels["host list"] = HostList()
     _panels['shutdown info'] = KeypressPrompt('shutdown')
 
@@ -60,10 +60,10 @@ def ask_connection_retry():
     asks the user if he wants to retry connecting to the server / game host.
     :return: True if the user wants to retry connecting, False otherwise
     """
-    _show_only("exit prompt")
+    _show_only("retry prompt")
 
     while True:
-        answer = _panels["exit prompt"].get_key()
+        answer = _panels["retry prompt"].get_key()
         if answer == UIData.key_codes['yes']:
             return True
         elif answer == UIData.key_codes['no']:
