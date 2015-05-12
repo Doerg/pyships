@@ -66,12 +66,12 @@ title = {
             'height': 3,
             'texts': {
                 'retry': ('Connection could not be established!'
-                            ' Try again? (Y/N)'),
+                            ' Try again? (y/n)'),
                 'join fail': ('Failed to join your selected host!'
                                 ' Press any key to return to host list'),
                 'host fail': ('Failed to host a game!'
                                 ' Press any key to return to host list'),
-                'shutdown': "Server has shut down! Please press 'Q' to exit"
+                'shutdown': "Server has shut down! Please press 'q' to exit"
             }
         },
         'host list': {
@@ -80,7 +80,7 @@ title = {
             'texts': {
                 'top1': 'Press numbers 1-9 to join or 0 to host a game.',
                 'top2': 'Hosting a game requires at least one free slot.',
-                'bottom': "Press 'R' to refresh the host list"
+                'bottom': "Press 'r' to refresh the host list"
             }
         }
     }
@@ -126,12 +126,12 @@ battle = {
                 ('←↑↓→', 'Move cursor'),
                 ('Space', 'Rotate ship'),
                 ('Return', 'Place ship'),
-                ('Q', 'Quit')
+                ('q', 'Quit')
             ),
             'battle': (
                 ('←↑↓→', 'Move cursor'),
                 ('Return', 'Fire shot'),
-                ('Q', 'Quit')
+                ('q', 'Quit')
             )
         }
     },

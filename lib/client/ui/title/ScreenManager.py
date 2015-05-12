@@ -89,7 +89,7 @@ def shutdown_info():
     keypress.
     """
     _show_only('shutdown info')
-    while shutdown_info.get_key() != UIData.key_codes['exit']:
+    while _panels['shutdown info'].get_key() != UIData.key_codes['exit']:
         pass
 
 
