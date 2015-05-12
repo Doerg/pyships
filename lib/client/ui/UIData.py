@@ -82,28 +82,28 @@ title = {
     }
 }
 
-general_prompt = title['prompts']['common']
+_general_prompt = title['prompts']['common']
 
-input_prompt = title['prompts']['input']
-input_prompt['input offset'] = len(
-    max(input_prompt['texts'].values(), key=lambda s: len(s))
-) + 2*general_prompt['hpadding']
-input_prompt['width'] = input_prompt['input offset'] + \
-                        input_prompt['input limit'] + \
-                        general_prompt['hpadding']
+_input_prompt = title['prompts']['input']
+_input_prompt['input offset'] = len(
+    max(_input_prompt['texts'].values(), key=lambda s: len(s))
+) + 2*_general_prompt['hpadding']
+_input_prompt['width'] = _input_prompt['input offset'] + \
+                        _input_prompt['input limit'] + \
+                        _general_prompt['hpadding']
 
-keypress_prompt = title['prompts']['keypress']
-keypress_prompt['width'] = len(
-    max(keypress_prompt['texts'].values(), key=lambda s: len(s))
-) + 2*general_prompt['hpadding']
+_keypress_prompt = title['prompts']['keypress']
+_keypress_prompt['width'] = len(
+    max(_keypress_prompt['texts'].values(), key=lambda s: len(s))
+) + 2*_general_prompt['hpadding']
 
-host_list = title['prompts']['host list']
-host_list['width'] = len(
-    max(host_list['texts'].values(), key=lambda s: len(s))
-) + 2*general_prompt['hpadding']
-host_list['height'] = 2*general_prompt['vpadding'] + \
-                        host_list['max hosts']+2 + \
-                        len(host_list['texts']) + 2
+_host_list = title['prompts']['host list']
+_host_list['width'] = len(
+    max(_host_list['texts'].values(), key=lambda s: len(s))
+) + 2*_general_prompt['hpadding']
+_host_list['height'] = 2*_general_prompt['vpadding'] + \
+                        _host_list['max hosts']+2 + \
+                        len(_host_list['texts']) + 2
 
 
 
@@ -133,19 +133,19 @@ battle = {
     },
     'frame': {}
 }
-battle_map = battle['map']
-battle_map['height'] = battle_map['logical size']
-battle_map['width'] = 2*battle_map['height'] - 1  #to keep visual symmetry
-battle_map['box']['width'] = battle_map['width'] + 2
-battle_map['box']['height'] = battle_map['height'] + 2
+_battle_map = battle['map']
+_battle_map['height'] = _battle_map['logical size']
+_battle_map['width'] = 2*_battle_map['height'] - 1  #to keep visual symmetry
+_battle_map['box']['width'] = _battle_map['width'] + 2
+_battle_map['box']['height'] = _battle_map['height'] + 2
 
-info_bar = battle['info bar']
-info_bar['width'] = 2*battle_map['box']['width'] + \
+_info_bar = battle['info bar']
+_info_bar['width'] = 2*_battle_map['box']['width'] + \
                     2*battle['window margin'] + 1
 
-frame = battle['frame']
-frame['width'] = info_bar['width'] + 2*battle['window margin'] + 2
-frame['height'] = 2*info_bar['height'] + battle_map['box']['height'] + \
+_frame = battle['frame']
+_frame['width'] = _info_bar['width'] + 2*battle['window margin'] + 2
+_frame['height'] = 2*_info_bar['height'] + _battle_map['box']['height'] + \
                   2*battle['window margin'] + 2
 
 

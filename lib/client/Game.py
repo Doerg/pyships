@@ -54,7 +54,6 @@ def _connect_to_server(connection):
     while True:
         player_name, server_ip = TitleScreen.server_logon()
         if connection.connect(server_ip):
-            connection.deliver_name(player_name)
             return player_name
         else:
             if not TitleScreen.ask_connection_retry():
@@ -70,22 +69,26 @@ def _connect_to_or_host_game(connection, player_name):
     :return: True if the player decided to be host, False otherwise
     """
     while True:
-        host_ip = TitleScreen.select_host(None)#connection.available_hosts
+        host_ip = TitleScreen.select_host(connection.available_hosts)
 
         if(host_ip):
-            if connection.connect(host_ip):
+            if connection.connect(host_ip, to_host=True):
                 TitleScreen.uninit()
                 BattleScreen.init(player_name)
                 return False
-        else:  # host ip is None: player wants to host a game
-            TitleScreen.uninit()
-            BattleScreen.init(player_name)
-            BattleScreen.message('Waiting for an opponent to connect...')
-            connection.wait_for_connection()
-            return True
+            if not TitleScreen.ask_connection_retry():
+                raise ProgramExit
 
-        if not TitleScreen.ask_connection_retry(): # if we get here: connecting
-            raise ProgramExit                      # to remote game host failed
+        else:  # host ip is None: player wants to host a game
+            if connection.register_as_host(player_name):
+                TitleScreen.uninit()
+                BattleScreen.init(player_name)
+                BattleScreen.message('Waiting for an opponent to connect...')
+                connection.wait_for_connection()
+                return True
+            if not TitleScreen.ask_connection_retry():
+                raise ProgramExit  #CHANGE TO HOSTING FAILED MESSAGE ETC
+
 
 
 def _run_battle(connection, opponent_name, player_starts):

@@ -147,14 +147,17 @@ class HostList(Prompt):
         :param available_hosts: all currently available hosts
         """
         list_offset = self._vpadding + 2
+        index = 1
 
-        for index, host in enumerate(available_hosts, start=1):
+        for host in available_hosts:
             self._win.addstr(
                 list_offset + index, self._hpadding,
-                "%2d\t%-15s: %-16s" % (index, host['ip'], host['name'])
+                "%2d\t%-15s: %-16s" % (
+                    index, host['ip'], host['name'].decode('utf-8')
+                )                                 # came as bytes
             )
+            index += 1
 
-        index += 1
         while index <= self._list_length:
             self._win.addstr(
                 list_offset + index, self._hpadding,

@@ -37,12 +37,11 @@ def select_host(query_hosts):
     _show_only("host list")
 
     keys = UIData.key_codes
+    max_hosts = UIData.title['prompts']['host list']['max hosts']
 
     while True:
-        available_hosts = [ #query_hosts()
-            {'ip': '1.1.1.1', 'name': 'host1'},
-            {'ip': '192.168.10.59', 'name': '123456789012345'}
-        ]
+        available_hosts = query_hosts()
+
         _panels["host list"].fill_hosts(available_hosts)
         _panels["host list"].update()
 
@@ -50,7 +49,8 @@ def select_host(query_hosts):
         if key == UIData.key_codes['refresh']:
             pass
         if key == 0: # player wants to host a game
-            return None
+            if len(available_hosts) < max_hosts:
+                return None
         if key <= len(available_hosts):
             return available_hosts[key-1]['ip']
 

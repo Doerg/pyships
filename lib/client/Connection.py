@@ -9,6 +9,7 @@ class Connection(object):
     connection interface used by the game client.
     """
     _host_port = 12345
+    _server_port = 12346
 
     def __init__(self):
         self._connection = None
@@ -19,17 +20,21 @@ class Connection(object):
         return self._connection != None
 
 
-    def connect(self, ip):
+    def connect(self, ip, to_host=False):
         """
         sets up connection to the server or a game host. if a connection to the
         server is currently established, it will be cut and replaced by the
         connection to the game host.
         :param host_ip: the ip of the server / game host
+        :param to_host: True if connection to a host shall by established,
+        False if a connection to a server shall be established
         :return: True if the connection could be established, False otherwise
         """
+        port = self._host_port if to_host else self._server_port
+
         try:
             with self.Timeout():
-                new_connection = Client((ip, self._host_port))
+                new_connection = Client((ip, port))
         except:  # general b/c different things can go wrong
             return False
 
@@ -39,12 +44,14 @@ class Connection(object):
 
     def wait_for_connection(self):
         """
-        cuts the connection with the server and listens for a client to connect.
-        this method is called when a player decided to become a game host.
+        listens for a client to connect and cuts the connection with the server
+        once a client connected. this method is called when a player decided to
+        become a game host.
         """
         with Listener(('', self._host_port)) as connection_listener:
             new_connection = connection_listener.accept()
 
+        self._connection.send(AcknowledgementMessage())
         self._set_connection(new_connection)
 
 
@@ -65,16 +72,20 @@ class Connection(object):
         queries the available hosts from the server.
         :return: all available hosts as tuples containing ip/name
         """
-        self._connection.send(HostsMessage())
-        return self._get_message.available_hosts
+        self._connection.send(HostsInfoMessage())
+        return self._get_message().available_hosts
 
 
-    def deliver_name(player_name):
+    def register_as_host(self, player_name):
         """
-        tells the server / opponent's client the local player's name.
+        tells the server that this client wants to host a game.
         :param player_name: the name of the local player
+        :return: True if hosting was accepted by the server, False otherwise
         """
         self._connection.send(NameMessage(player_name))
+        if self._get_message().ack:
+            return True
+        return False
 
 
     def exchange_names(self, player_name):
@@ -84,8 +95,8 @@ class Connection(object):
         :param player_name: the name of the local player
         :return: the name of the opponent
         """
-        self.deliver_name(player_name)
-        return self._get_message().player_name.decode('utf-8') #came as bytes
+        self._connection.send(NameMessage(player_name))
+        return self._get_message().player_name.decode('utf-8') # came as bytes
 
 
     def send_acknowledgement(self):
@@ -194,12 +205,15 @@ class Connection(object):
 
     def _abortion_check(self, message):
         """
-        checks whether the given message signals the exit of the remote player.
-        raises the appropriate exception that is the case.
+        checks whether the given message signals the exit of the remote player
+        or a server shutdown. raises the appropriate exception if either is the
+        case.
         :param message: the message to be checked
         """
         if isinstance(message, ExitMessage):
             raise OpponentLeft
+        if isinstance(message, ShutdownMessage):
+            raise ServerShutdown
 
 
     class Timeout:

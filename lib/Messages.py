@@ -1,4 +1,4 @@
-class HostsMessage(object):
+class HostsInfoMessage(object):
     """
     can be used by a client to query the available game hosts from the server,
     or it can be used by the server to deliver the available game hosts to the
@@ -11,7 +11,8 @@ class HostsMessage(object):
 
 class NameMessage(object):
     """
-    delivers the name of one player to the other player's client.
+    can be sent to the server to register this client as a host. can also be
+    sent to the opponent player's client for name exchange.
     """
     def __init__(self, player_name):
         self.player_name = player_name
@@ -47,7 +48,7 @@ class RevealMessage(object):
 
 class ExitMessage(object):
     """
-    sent by a client to signal disconnection / program exit.
+    sent by a client to signal disconnection or program exit.
     """
     pass
 
@@ -56,6 +57,15 @@ class AcknowledgementMessage(object):
     """
     acknowledges an action. what that action is depends on the context in which
     this message is used (for example, acknowledge having finished ship
-    placements).
+    placements). can be used as a negative acknowledgement by passing False
+    to the constructor.
+    """
+    def __init__(self, ack=True):
+        self.ack = ack
+
+
+class ShutdownMessage(object):
+    """
+    tells a client that the server shut down.
     """
     pass
