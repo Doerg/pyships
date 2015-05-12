@@ -20,7 +20,7 @@ class Connection(object):
         return self._connection != None
 
 
-    def connect(self, ip, to_host=False):
+    def connect(self, ip, to_host=False):   #REWORK THIS TO BE NOT THAT GENERIC
         """
         sets up connection to the server or a game host. if a connection to the
         server is currently established, it will be cut and replaced by the

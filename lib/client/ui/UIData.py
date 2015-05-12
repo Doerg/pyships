@@ -65,8 +65,12 @@ title = {
             'relative vertical location': 0.75,
             'height': 3,
             'texts': {
-                'retry': 'Connection could not be established!' + \
-                            ' Try again? (Y/N)',
+                'retry': ('Connection could not be established!'
+                            ' Try again? (Y/N)'),
+                'join fail': ('Failed to join your selected host!'
+                                ' Press any key to return to host list'),
+                'host fail': ("Can't host a game because all slots are taken!"
+                                ' Press any key to return to host list'),
                 'shutdown': "Server has shut down! Please press 'Q' to exit"
             }
         },

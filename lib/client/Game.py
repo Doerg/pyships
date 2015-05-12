@@ -56,7 +56,7 @@ def _connect_to_server(connection):
         if connection.connect(server_ip):
             return player_name
         else:
-            if not TitleScreen.ask_connection_retry():
+            if not TitleScreen.ask_server_connection_retry():
                 raise ProgramExit
 
 
@@ -76,8 +76,6 @@ def _connect_to_or_host_game(connection, player_name):
                 TitleScreen.uninit()
                 BattleScreen.init(player_name)
                 return False
-            if not TitleScreen.ask_connection_retry():
-                raise ProgramExit
 
         else:  # host ip is None: player wants to host a game
             if connection.register_as_host(player_name):
@@ -86,8 +84,8 @@ def _connect_to_or_host_game(connection, player_name):
                 BattleScreen.message('Waiting for an opponent to connect...')
                 connection.wait_for_connection()
                 return True
-            if not TitleScreen.ask_connection_retry():
-                raise ProgramExit  #CHANGE TO HOSTING FAILED MESSAGE ETC
+
+        TitleScreen.inform_game_launch_failure(host_ip == None)
 
 
 
