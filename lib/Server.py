@@ -60,7 +60,10 @@ class ConnectionHandler(Thread):
                     )
 
                 elif isinstance(msg, NameMessage):
-                    if len(self._game_hosts) < 9:
+                    if (not [host for host in self._game_hosts
+                        if host['ip'] == self._client_ip] and
+                        len(self._game_hosts) < 9):
+
                         with Lock():
                             self._game_hosts.append(
                                 {'ip': self._client_ip, 'name': msg.player_name}
@@ -69,7 +72,7 @@ class ConnectionHandler(Thread):
                         log_msg = 'client with ip %s registered as host'
                     else:
                         log_msg = ('client with ip %s was denied'
-                                    ' registering as host (slots full)')
+                                    ' registering as host')
 
                     self._client_connection.send(
                         AcknowledgementMessage(self._client_is_host)

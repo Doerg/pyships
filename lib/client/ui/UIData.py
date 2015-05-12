@@ -69,7 +69,7 @@ title = {
                             ' Try again? (Y/N)'),
                 'join fail': ('Failed to join your selected host!'
                                 ' Press any key to return to host list'),
-                'host fail': ("Can't host a game because all slots are taken!"
+                'host fail': ('Failed to host a game!'
                                 ' Press any key to return to host list'),
                 'shutdown': "Server has shut down! Please press 'Q' to exit"
             }
