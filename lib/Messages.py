@@ -9,6 +9,15 @@ class HostsInfoMessage(object):
             self.available_hosts = available_hosts
 
 
+class GameStartMessage(object):
+    """
+    can be used by a client to signal the start of a game and a consequent
+    disconnect from the server.
+    """
+    def __init__(self, as_host):
+        self.as_host = as_host
+
+
 class NameMessage(object):
     """
     can be sent to the server to register this client as a host. can also be

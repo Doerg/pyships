@@ -27,7 +27,7 @@ def _run_game(stdscr):
 
     try:
         player_name = _connect_to_server(connection)
-        is_host = _connect_to_or_host_game(connection, player_name)
+        is_host = _set_up_game(connection, player_name)
 
         opponent_name = connection.exchange_names(player_name)
         BattleScreen.introduce_opponent(opponent_name)
@@ -53,14 +53,14 @@ def _connect_to_server(connection):
     """
     while True:
         player_name, server_ip = TitleScreen.server_logon()
-        if connection.connect(server_ip):
+        if connection.connect_to_server(server_ip):
             return player_name
         else:
             if not TitleScreen.ask_server_connection_retry():
                 raise ProgramExit
 
 
-def _connect_to_or_host_game(connection, player_name):
+def _set_up_game(connection, player_name):
     """
     gives the player the opportunity to either join a hosted game or to host a
     game himself.
@@ -72,7 +72,7 @@ def _connect_to_or_host_game(connection, player_name):
         host_ip = TitleScreen.select_host(connection.available_hosts)
 
         if(host_ip):
-            if connection.connect(host_ip, to_host=True):
+            if connection.connect_to_host(host_ip):
                 TitleScreen.uninit()
                 BattleScreen.init(player_name)
                 return False

@@ -15,10 +15,7 @@ def run():
             with Listener(('', _listener_port)) as connection_listener:
                 client_connection = connection_listener.accept()
                 client_ip = connection_listener.last_accepted[0]
-                logging.info(
-                    'client with ip %s logged on' %
-                    connection_listener.last_accepted[0]
-                )
+                logging.info('client (%s) logged on' % client_ip)
                 ConnectionHandler(client_connection, client_ip, hosts).start()
 
     except KeyboardInterrupt:
@@ -55,7 +52,7 @@ class ConnectionHandler(Thread):
                             HostsInfoMessage(self._game_hosts)
                         )
                     logging.info(
-                        'client with ip %s queried the host list' %
+                        'client (%s) queried the host list' %
                         self._client_ip
                     )
 
@@ -69,27 +66,27 @@ class ConnectionHandler(Thread):
                                 {'ip': self._client_ip, 'name': msg.player_name}
                             )
                         self._client_is_host = True
-                        log_msg = 'client with ip %s registered as host'
+                        log_msg = 'client (%s) registered as host'
                     else:
-                        log_msg = ('client with ip %s was denied'
-                                    ' registering as host')
+                        log_msg = 'client (%s) was denied registering as host'
 
                     self._client_connection.send(
                         AcknowledgementMessage(self._client_is_host)
                     )
                     logging.info(log_msg % self._client_ip)
 
-                elif isinstance(msg, AcknowledgementMessage):
+                elif isinstance(msg, GameStartMessage):
                     with Lock():
                         for host in self._game_hosts:
                             if host['ip'] == self._client_ip:
                                 self._game_hosts.remove(host)
 
                     self._client_connection.close()
-                    logging.info(
-                        'client host with ip %s closed the connection'
-                        ' and is starting a game' % self._client_ip
-                    )
+                    if msg.as_host:
+                        log_msg = 'hosting client (%s) started a game'
+                    else:
+                        log_msg = 'client (%s) joined a game'
+                    logging.info(log_msg % self._client_ip)
                     break
 
                 elif isinstance(msg, ExitMessage):
@@ -98,11 +95,14 @@ class ConnectionHandler(Thread):
                             for host in self._game_hosts:
                                 if host['ip'] == self._client_ip:
                                     self._game_hosts.remove(host)
-                        log_msg = ('client host with ip %s aborted hosting and'
-                                    ' closed the connection')
+                        log_msg = 'hosting client (%s) exited'
                     else:
-                        log_msg = 'client with ip %s closed the connection'
+                        log_msg = 'client (%s) exited'
 
                     self._client_connection.close()
                     logging.info(log_msg % self._client_ip)
                     break
+
+        logging.info(
+            'client listener (%s) closed down' % self._client_ip
+        )

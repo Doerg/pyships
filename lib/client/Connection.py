@@ -20,50 +20,71 @@ class Connection(object):
         return self._connection != None
 
 
-    def connect(self, ip, to_host=False):   #REWORK THIS TO BE NOT THAT GENERIC
+    def connect_to_server(self, ip):
         """
-        sets up connection to the server or a game host. if a connection to the
-        server is currently established, it will be cut and replaced by the
-        connection to the game host.
-        :param host_ip: the ip of the server / game host
-        :param to_host: True if connection to a host shall by established,
-        False if a connection to a server shall be established
-        :return: True if the connection could be established, False otherwise
+        connects to the pyships server.
+        :param ip: the server ip
+        :return: True if connection could be established, False otherwise
         """
-        port = self._host_port if to_host else self._server_port
-
         try:
             with self.Timeout():
-                new_connection = Client((ip, port))
+                self._connection = self._establish_new_connection(ip, False)
         except:  # general b/c different things can go wrong
             return False
 
-        self._set_connection(new_connection)
+        return True
+
+
+    def connect_to_host(self, ip):
+        """
+        connects to a pyships host client. cuts the connection to the server
+        once the connection to the host client is established.
+        :param ip: the host client's ip
+        :return: True if connection could be established, False otherwise
+        """
+        try:
+            with self.Timeout():
+                new_connection = self._establish_new_connection(ip, True)
+        except:  # general b/c different things can go wrong
+            return False
+
+        self._swap_connections(new_connection, False)
         return True
 
 
     def wait_for_connection(self):
         """
-        listens for a client to connect and cuts the connection with the server
-        once a client connected. this method is called when a player decided to
-        become a game host.
+        as a hosting client, listens for another client to connect and cuts the
+        connection to the server once a client connected.
         """
         with Listener(('', self._host_port)) as connection_listener:
             new_connection = connection_listener.accept()
 
-        self._connection.send(AcknowledgementMessage())
-        self._set_connection(new_connection)
+        self._swap_connections(new_connection, True)
 
 
-    def _set_connection(self, new_connection):
+    def _establish_new_connection(self, ip, to_game_host):
         """
-        disconnects from the previous connection, if there is one, and assigns
-        the new connection as the connection to be used from now on.
+        sets up and returns a new connection.
+        :param ip: the ip to connect to
+        :param to_game_host: True if the connection is made with a game host,
+        False if the connection is made with a server
+        :return: a connection object
+        """
+        port = self._host_port if to_game_host else self._server_port
+        return Client((ip, port))
+
+
+    def _swap_connections(self, new_connection, as_host):
+        """
+        disconnects from the connection to the server and assigns the new
+        connection as the connection to be used from now on. also informs the
+        server about the game start.
         :param new_connection: the new connection to be used
+        :param as_host: True if the client acts as a host, False otherwise
         """
-        if self.established:  # if connected to the server
-            self.inform_exit()
-            self._connection.close()
+        self._connection.send(GameStartMessage(as_host))
+        self._connection.close()
         self._connection = new_connection
 
 
