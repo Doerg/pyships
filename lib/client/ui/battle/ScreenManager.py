@@ -181,7 +181,7 @@ def ask_for_another_battle(msg):
     :param msg: the message to display to the player
     :return: True if the player wants a rematch, False otherwise
     """
-    message(msg + ' Play again? (Y/N)')
+    message(msg + ' Play again? (y/n)')
 
     while True:
         key = _windows['message bar'].get_key()
@@ -206,7 +206,7 @@ def handle_exit(msg):
     displays the message and returns once the player pressed exit.
     :param msg: the message to display
     """
-    message(msg + " Please press 'Q' to exit.")
+    message(msg + " Please press 'q' to exit.")
     while _windows['message bar'].get_key() != UIData.key_codes['exit']:
         pass
 
