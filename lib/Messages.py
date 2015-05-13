@@ -14,8 +14,7 @@ class GameStartMessage(object):
     can be used by a client to signal the start of a game and a consequent
     disconnect from the server.
     """
-    def __init__(self, as_host):
-        self.as_host = as_host
+    pass
 
 
 class NameMessage(object):

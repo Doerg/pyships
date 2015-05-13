@@ -48,7 +48,7 @@ class Connection(object):
         except:  # general b/c different things can go wrong
             return False
 
-        self._swap_connections(new_connection, False)
+        self._swap_connections(new_connection)
         return True
 
 
@@ -60,7 +60,7 @@ class Connection(object):
         with Listener(('', self._host_port)) as connection_listener:
             new_connection = connection_listener.accept()
 
-        self._swap_connections(new_connection, True)
+        self._swap_connections(new_connection)
 
 
     def _establish_new_connection(self, ip, to_game_host):
@@ -75,17 +75,16 @@ class Connection(object):
         return Client((ip, port))
 
 
-    def _swap_connections(self, new_connection, as_host):
+    def _swap_connections(self, client_connection):
         """
-        disconnects from the connection to the server and assigns the new
-        connection as the connection to be used from now on. also informs the
-        server about the game start.
-        :param new_connection: the new connection to be used
-        :param as_host: True if the client acts as a host, False otherwise
+        disconnects from the connection to the server and assigns the given
+        client connection as the connection to be used from now on. also
+        informs the server about the game start.
+        :param client_connection: the new client connection to be used
         """
-        self._connection.send(GameStartMessage(as_host))
+        self._connection.send(GameStartMessage())
         self._connection.close()
-        self._connection = new_connection
+        self._connection = client_connection
 
 
     def available_hosts(self):

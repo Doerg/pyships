@@ -20,8 +20,8 @@ def run():
 
     except KeyboardInterrupt:
         ConnectionHandler.server_shutdown = True
-        logging.info('shutting down')
         # forces all threads to close their connections and terminate
+        logging.info('shutting down')
 
 
 
@@ -33,7 +33,7 @@ class ConnectionHandler(Thread):
         self._client_connection = client_connection
         self._client_ip = client_ip
         self._game_hosts = hosts
-        self._client_is_host = False
+        self._host_list_entry = None  # set once client becomes a game host
 
 
     def run(self):
@@ -47,62 +47,59 @@ class ConnectionHandler(Thread):
                 msg = self._client_connection.recv()
 
                 if isinstance(msg, HostsInfoMessage):
-                    with Lock():
-                        self._client_connection.send(
-                            HostsInfoMessage(self._game_hosts)
-                        )
-                    logging.info(
-                        'client (%s) queried the host list' %
-                        self._client_ip
-                    )
-
+                    self._send_host_info()
                 elif isinstance(msg, NameMessage):
-                    if (not [host for host in self._game_hosts
-                        if host['ip'] == self._client_ip] and
-                        len(self._game_hosts) < 9):
-
-                        with Lock():
-                            self._game_hosts.append(
-                                {'ip': self._client_ip, 'name': msg.player_name}
-                            )
-                        self._client_is_host = True
-                        log_msg = 'client (%s) registered as host'
-                    else:
-                        log_msg = 'client (%s) was denied registering as host'
-
-                    self._client_connection.send(
-                        AcknowledgementMessage(self._client_is_host)
-                    )
-                    logging.info(log_msg % self._client_ip)
-
+                    self._handle_host_registering(msg)
                 elif isinstance(msg, GameStartMessage):
-                    with Lock():
-                        for host in self._game_hosts:
-                            if host['ip'] == self._client_ip:
-                                self._game_hosts.remove(host)
-
+                    self._handle_game_start()
                     self._client_connection.close()
-                    if msg.as_host:
-                        log_msg = 'hosting client (%s) started a game'
-                    else:
-                        log_msg = 'client (%s) joined a game'
-                    logging.info(log_msg % self._client_ip)
                     break
-
                 elif isinstance(msg, ExitMessage):
-                    if self._client_is_host:
-                        with Lock():
-                            for host in self._game_hosts:
-                                if host['ip'] == self._client_ip:
-                                    self._game_hosts.remove(host)
-                        log_msg = 'hosting client (%s) exited'
-                    else:
-                        log_msg = 'client (%s) exited'
-
+                    self._handle_client_exit()
                     self._client_connection.close()
-                    logging.info(log_msg % self._client_ip)
                     break
 
-        logging.info(
-            'client listener (%s) closed down' % self._client_ip
-        )
+        self._log_with_ip('client listener (%s) closing down')
+
+
+    def _send_host_info(self):
+        with Lock():
+            self._client_connection.send(HostsInfoMessage(self._game_hosts))
+        self._log_with_ip('client (%s) queried the host list')
+
+
+    def _handle_host_registering(self, msg):
+        if not self._host_list_entry and len(self._game_hosts) < 9:
+            with Lock():
+                self._host_list_entry = {
+                    'ip': self._client_ip, 'name': msg.player_name
+                }
+                self._game_hosts.append(self._host_list_entry)
+
+            hosting_succeeded = True
+            self._log_with_ip('client (%s) registered as host')
+        else:
+            hosting_succeeded = False
+            self._log_with_ip('client (%s) was denied registering as host')
+
+        self._client_connection.send(AcknowledgementMessage(hosting_succeeded))
+
+
+    def _handle_game_start(self):
+        if self._host_list_entry:
+            self._game_hosts.remove(self._host_list_entry)
+            self._log_with_ip('hosting client (%s) started a game')
+        else:
+            self._log_with_ip('client (%s) joined a game')
+
+
+    def _handle_client_exit(self):
+        if self._host_list_entry:
+            self._game_hosts.remove(self._host_list_entry)
+            self._log_with_ip('hosting client (%s) exited')
+        else:
+            self._log_with_ip('client (%s) exited')
+
+
+    def _log_with_ip(self, msg):
+        logging.info(msg % self._client_ip)
