@@ -65,6 +65,7 @@ title = {
             'relative vertical location': 0.75,
             'height': 3,
             'texts': {
+                'wait': 'Waiting for an opponent to connect...',
                 'retry': ('Connection could not be established!'
                             ' Try again? (y/n)'),
                 'join fail': ('Failed to join your selected host!'

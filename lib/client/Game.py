@@ -64,10 +64,10 @@ def _establish_direct_p2p_connection(connection, direct_p2p_data):
     :param direct_p2p_data: dictionary holding direct p2p client connection data
     """
     if direct_p2p_data['as host']:
+        TitleScreen.wait_message()
+        connection.wait_for_connection()
         TitleScreen.uninit()
         BattleScreen.init(direct_p2p_data['player name'])
-        BattleScreen.message('Waiting for an opponent to connect...')
-        connection.wait_for_connection()
     else:
         if connection.connect_to_host(direct_p2p_data['host ip']):
             TitleScreen.uninit()
@@ -112,10 +112,10 @@ def _establish_game_connection(connection, player_name):
 
         else:  # host ip is None: player wants to host a game
             if connection.register_as_host(player_name):
+                TitleScreen.wait_message()
+                connection.wait_for_connection()
                 TitleScreen.uninit()
                 BattleScreen.init(player_name)
-                BattleScreen.message('Waiting for an opponent to connect...')
-                connection.wait_for_connection()
                 return True
 
         TitleScreen.inform_game_launch_failure(host_ip == None)

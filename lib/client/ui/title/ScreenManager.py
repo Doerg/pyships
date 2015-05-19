@@ -13,6 +13,7 @@ def init():
     _panels['ip prompt'] = InputPrompt('ip', gap=True)
     _panels['host list'] = HostList()
     _panels['retry prompt'] = KeypressPrompt('retry')
+    _panels['wait prompt'] = KeypressPrompt('wait')
     _panels['joining failure'] = KeypressPrompt('join fail')
     _panels['hosting failure'] = KeypressPrompt('host fail')
     _panels['direct p2p failure'] = KeypressPrompt('direct p2p fail')
@@ -71,6 +72,14 @@ def ask_server_connection_retry():
             return True
         elif answer == UIData.key_codes['no']:
             return False
+
+
+def wait_message():
+    """
+    displays a wait message while listening for an incoming client connection
+    as a game host.
+    """
+    _show_only('wait prompt')
 
 
 def inform_game_launch_failure(as_host):

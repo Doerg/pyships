@@ -100,6 +100,9 @@ class KeypressPrompt(Prompt):
         super().__init__()
         text = self._texts[text_key]
         text_offset = (self._width - len(text)) // 2
+
+        curses.curs_set(False)
+        curses.noecho()
         self._win.addstr(self._vpadding, text_offset, text, curses.A_BOLD)
 
 
