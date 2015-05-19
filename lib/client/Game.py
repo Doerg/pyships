@@ -6,18 +6,24 @@ import curses
 import atexit
 
 
-def run():
+def run(direct_p2p_data):
     """
     wraps the client into a curses environment which does all the basic
     curses initialisations and deinitialisations automatically.
+    :param direct_p2p_data: contains a dictionary with direct p2p client
+    connection data, if this mode was chosen via command line. otherwise, it
+    contains None
     """
-    curses.wrapper(_run_game)
+    curses.wrapper(_run_game, direct_p2p_data)
 
 
-def _run_game(stdscr):
+def _run_game(stdscr, direct_p2p_data):
     """
     top level game logic.
     :param stdscr: curses default window, passed by wrapper method
+    :param direct_p2p_data: contains a dictionary with direct p2p client
+    connection data, if this mode was chosen via command line. otherwise, it
+    contains None
     """
     UIData.init_colors()
     TitleScreen.init()
@@ -26,8 +32,13 @@ def _run_game(stdscr):
     atexit.register(connection.ensure_closing)
 
     try:
-        player_name = _connect_to_server(connection)
-        is_host = _set_up_game(connection, player_name)
+        if direct_p2p_data:
+            _establish_direct_p2p_connection(connection, direct_p2p_data)
+            player_name = direct_p2p_data['player name']
+            is_host = direct_p2p_data['as host']
+        else:
+            player_name = _connect_to_server(connection)
+            is_host = _establish_game_connection(connection, player_name)
 
         opponent_name = connection.exchange_names(player_name)
         BattleScreen.introduce_opponent(opponent_name)
@@ -44,6 +55,28 @@ def _run_game(stdscr):
         BattleScreen.handle_exit('%s has left the game!' % opponent_name)
 
 
+def _establish_direct_p2p_connection(connection, direct_p2p_data):
+    """
+    establishes a direct p2p connection to another client, circumventing the
+    server. this client can either take the role of a host or of a client
+    connecting directly to a host.
+    :param connection: the connection object, not connected yet
+    :param direct_p2p_data: dictionary holding direct p2p client connection data
+    """
+    if direct_p2p_data['as host']:
+        TitleScreen.uninit()
+        BattleScreen.init(direct_p2p_data['player name'])
+        BattleScreen.message('Waiting for an opponent to connect...')
+        connection.wait_for_connection()
+    else:
+        if connection.connect_to_host(direct_p2p_data['host ip']):
+            TitleScreen.uninit()
+            BattleScreen.init(direct_p2p_data['player name'])
+        else:
+            TitleScreen.inform_direct_p2p_connection_failure()
+            raise ProgramExit
+
+
 def _connect_to_server(connection):
     """
     establishes a connection to the server, requiring user input from the
@@ -54,13 +87,13 @@ def _connect_to_server(connection):
     while True:
         player_name, server_ip = TitleScreen.server_logon()
         if connection.connect_to_server(server_ip):
-            return player_name
+            return player_name.decode('utf-8') # curses returns bytestring
         else:
             if not TitleScreen.ask_server_connection_retry():
                 raise ProgramExit
 
 
-def _set_up_game(connection, player_name):
+def _establish_game_connection(connection, player_name):
     """
     gives the player the opportunity to either join a hosted game or to host a
     game himself.

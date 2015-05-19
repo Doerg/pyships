@@ -71,6 +71,8 @@ title = {
                                 ' Press any key to return to host list'),
                 'host fail': ('Failed to host a game!'
                                 ' Press any key to return to host list'),
+                'direct p2p fail': ('Failed to connect to the game host!'
+                                " Please press 'q' to exit"),
                 'shutdown': "Server has shut down! Please press 'q' to exit"
             }
         },

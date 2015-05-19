@@ -152,9 +152,7 @@ class HostList(Prompt):
         for host in available_hosts:
             self._win.addstr(
                 list_offset + index, self._hpadding,
-                "%2d\t%-15s: %-16s" % (
-                    index, host['ip'], host['name'].decode('utf-8')
-                )                                 # came as bytes
+                "%2d\t%-15s: %-16s" % (index, host['ip'], host['name'])
             )
             index += 1
 

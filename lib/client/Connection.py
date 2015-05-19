@@ -77,13 +77,14 @@ class Connection(object):
 
     def _swap_connections(self, client_connection):
         """
-        disconnects from the connection to the server and assigns the given
-        client connection as the connection to be used from now on. also
-        informs the server about the game start.
+        if a connection to the server is established: informs the server about
+        the game start and disconnects afterwards. will assign the given client
+        connection as the connection to be used from now on.
         :param client_connection: the new client connection to be used
         """
-        self._connection.send(GameStartMessage())
-        self._connection.close()
+        if self.established:
+            self._connection.send(GameStartMessage())
+            self._connection.close()
         self._connection = client_connection
 
 
@@ -116,7 +117,7 @@ class Connection(object):
         :return: the name of the opponent
         """
         self._connection.send(NameMessage(player_name))
-        return self._get_message().player_name.decode('utf-8') # came as bytes
+        return self._get_message().player_name
 
 
     def send_acknowledgement(self):

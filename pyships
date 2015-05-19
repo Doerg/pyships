@@ -7,12 +7,31 @@ from Logger import setup_logging, LOG_LEVELS
 import logging
 
 
+def _extract_p2p_data(cmndline_args):
+    """
+    builds a dictionary containing all data necessary for direct p2p mode.
+    :param cmndline_args: argparse command line arguments object
+    :return: a dictionary containing all data necessary for direct p2p mode, or
+    None if the mode was not specified via command line
+    """
+    if cmndline_args.host_data:
+        return {
+            'as host': True,
+            'player name': args.host_data[0]
+        }
+    elif cmndline_args.destination_host:
+        return {
+            'as host': False,
+            'player name': args.destination_host[0],
+            'host ip': args.destination_host[1]
+        }
+    else:
+        return None
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description='pyships: play Battleships via LAN')
 
-    parser.add_argument(
-        '-s', '--server', action='store_true', help='start a pyships server'
-    )
     parser.add_argument(
         '-l', '--loglevel', dest='lvl', choices=LOG_LEVELS, default='INFO',
         type=str.upper, help='set log level (default is INFO)'
@@ -20,8 +39,23 @@ if __name__ == "__main__":
     parser.add_argument(
         '-o', '--output', dest='path', type=str, help='set log file path'
     )
-    args = parser.parse_args()
 
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '-s', '--server', action='store_true', help='start a pyships server'
+    )
+    group.add_argument(
+        '-t', '--host', nargs=1, metavar='PLAYERNAME', dest='host_data',
+        help='host a pyships game directly, without server registration'
+    )
+    group.add_argument(
+        '-c', '--connect', nargs=2,
+        metavar=('PLAYERNAME', 'HOST-IP'), dest='destination_host',
+        help='connect to a pyships host directly, skipping server lookup'
+    )
+
+    args = parser.parse_args()
+    direct_p2p_data = _extract_p2p_data(args)
     setup_logging(args.server, args.lvl, args.path)
 
     if args.server:
@@ -31,4 +65,4 @@ if __name__ == "__main__":
     else:
         from client import Game
         logging.debug('starting client')
-        Game.run()
+        Game.run(direct_p2p_data)
