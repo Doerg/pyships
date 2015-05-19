@@ -56,11 +56,16 @@ class Connection(object):
         """
         as a hosting client, listens for another client to connect and cuts the
         connection to the server once a client connected.
+        :return: True if game hosting succeeded, False otherwise
         """
-        with Listener(('', self._host_port)) as connection_listener:
-            new_connection = connection_listener.accept()
+        try:
+            with Listener(('', self._host_port)) as connection_listener:
+                new_connection = connection_listener.accept()
+        except OSError: # another client already hosts on the same machine
+            return False
 
         self._swap_connections(new_connection)
+        return True
 
 
     def _establish_new_connection(self, ip, to_game_host):

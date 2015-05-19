@@ -16,7 +16,8 @@ def init():
     _panels['wait prompt'] = KeypressPrompt('wait')
     _panels['joining failure'] = KeypressPrompt('join fail')
     _panels['hosting failure'] = KeypressPrompt('host fail')
-    _panels['direct p2p failure'] = KeypressPrompt('direct p2p fail')
+    _panels['p2p connect failure'] = KeypressPrompt('p2p connect fail')
+    _panels['p2p host failure'] = KeypressPrompt('p2p host fail')
     _panels['shutdown info'] = KeypressPrompt('shutdown')
 
     _panels['background'].update()
@@ -93,13 +94,14 @@ def inform_game_launch_failure(as_host):
     _panels[panel_key].get_key()
 
 
-def inform_direct_p2p_connection_failure():
+def inform_direct_p2p_failure(as_host):
     """
     informs the user that he could not join a game host via direct p2p. waits
     for an acknowledging keypress.
     """
-    _show_only('direct p2p failure')
-    while _panels['direct p2p failure'].get_key() != UIData.key_codes['exit']:
+    panel_key = 'p2p connect failure' if as_host else 'p2p host failure'
+    _show_only(panel_key)
+    while _panels[panel_key].get_key() != UIData.key_codes['exit']:
         pass
 
 

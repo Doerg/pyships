@@ -65,15 +65,18 @@ def _establish_direct_p2p_connection(connection, direct_p2p_data):
     """
     if direct_p2p_data['as host']:
         TitleScreen.wait_message()
-        connection.wait_for_connection()
-        TitleScreen.uninit()
-        BattleScreen.init(direct_p2p_data['player name'])
+        if connection.wait_for_connection():
+            TitleScreen.uninit()
+            BattleScreen.init(direct_p2p_data['player name'])
+        else:
+            TitleScreen.inform_direct_p2p_failure(as_host=True)
+            raise ProgramExit
     else:
         if connection.connect_to_host(direct_p2p_data['host ip']):
             TitleScreen.uninit()
             BattleScreen.init(direct_p2p_data['player name'])
         else:
-            TitleScreen.inform_direct_p2p_connection_failure()
+            TitleScreen.inform_direct_p2p_failure(as_host=False)
             raise ProgramExit
 
 
@@ -113,10 +116,10 @@ def _establish_game_connection(connection, player_name):
         else:  # host ip is None: player wants to host a game
             if connection.register_as_host(player_name):
                 TitleScreen.wait_message()
-                connection.wait_for_connection()
-                TitleScreen.uninit()
-                BattleScreen.init(player_name)
-                return True
+                if connection.wait_for_connection():
+                    TitleScreen.uninit()
+                    BattleScreen.init(player_name)
+                    return True
 
         TitleScreen.inform_game_launch_failure(host_ip == None)
 
